@@ -14,7 +14,7 @@ import jssc.SerialPortTimeoutException;
  */
 public class Balances {
     public static final String REQUEST_WEIGHT = "SI" + "\r" + "\n";
-    public static final String REQUEST_TOR = "SI" + "\r" + "\n";
+    public static final String REQUEST_TOR = "ST" + "\r" + "\n";
     public static final String REQUEST_ON_OFF = "SS" + "\r" + "\n";
     public static final int []  REQUEST_ON_RELAY1 = {0x01,0x05,0x00,0x00,0xFF,0x00,0x8C,0x3A};
     public static final int []  REQUEST_OFF_RELAY1 = {0x01,0x05,0x00,0x00,0x00,0x00,0xCD,0xCA};
