@@ -11,6 +11,7 @@ import javafx.scene.control.*;
 import jssc.SerialPort;
 import jssc.SerialPortException;
 import jssc.SerialPortList;
+import jssc.SerialPortTimeoutException;
 import sun.rmi.runtime.Log;
 
 import java.util.Observable;
@@ -20,6 +21,8 @@ import java.util.TimerTask;
 import static jssc.SerialPortList.getPortNames;
 
 public class Controller {
+
+    private final static int TIME_TREED_SLEEP = 10;
 
 
     @FXML
@@ -39,7 +42,7 @@ public class Controller {
     @FXML
     private Menu menuFile;
 
-    private double weight = 0;
+    private double weight;// = 0;
     private double firstW;
     private double secondW;
 
@@ -50,8 +53,9 @@ public class Controller {
     MyTimerTask myTimerTask = new MyTimerTask();
     private Main mainApp;
 
-    private boolean pause = false;
-    private boolean programIsRun = false;
+    private static volatile boolean  pause = false;
+    private static volatile boolean programIsRun = false;
+
 
 
     public Controller(){
@@ -90,10 +94,33 @@ public class Controller {
 
     public void startBalancesWeight () throws SerialPortException {
 
-        firstW = Double.parseDouble (firstWeight.getText());
-        secondW = Double.parseDouble (secondWeight.getText());
+        String firstWStr = firstWeight.getText();
+        String secondWStr = secondWeight.getText();
+        firstWStr = firstWStr.replace(",",".").trim();
+        secondWStr = secondWStr.replace(",",".").trim();
 
-        programIsRun = true;
+        if (firstWStr.equals("") || secondWStr.equals("") ){
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Error");
+            alert.setHeaderText("");
+            alert.setContentText("Введите величины веса в соответсвующие поля");
+            alert.showAndWait();
+            return;
+        }
+
+        try {
+            firstW = Double.parseDouble(firstWStr);
+            secondW = Double.parseDouble(secondWStr);
+            programIsRun = true;
+        } catch (NumberFormatException e){
+            e.printStackTrace();
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Error");
+            alert.setHeaderText("");
+            alert.setContentText("Неверный формат введеных данных в поле веса, должны быть числа.");
+            alert.showAndWait();
+
+        }
 
         System.out.println("Запуск работы программы");
 
@@ -105,10 +132,17 @@ public class Controller {
 
     }
 
-    public void endButtonPush() throws SerialPortException {
+    public void endButtonPush() {
 
-        weight = 0; //TODO отладка
         programIsRun = false;
+//        pause = true;
+//
+//        Thread.sleep(TIME_TREED_SLEEP);
+//        balances.sendRequest(Balances.REQUEST_OFF_RELAY1);
+//        Thread.sleep(TIME_TREED_SLEEP);
+//        balances.sendRequest(Balances.REQUEST_OFF_RELAY2);
+//        pause = false;
+
 
         System.out.println("Остановка работы программы");
 //        timer.cancel();
@@ -186,10 +220,30 @@ public class Controller {
     }
 
     public void stopTask() throws SerialPortException {
-        timer.cancel();
-        timer.purge();
-        balances.closePort();
-        balances = null;
+        if (timer != null) {
+            timer.cancel();
+            timer.purge();
+        }
+        if (balances != null && balances.getSerialPort().isOpened()) {
+            balances.closePort();
+            balances = null;
+        }
+    }
+
+    public TextField getFirstWeight() {
+        return firstWeight;
+    }
+
+    public void setFirstWeight(TextField firstWeight) {
+        this.firstWeight = firstWeight;
+    }
+
+    public TextField getSecondWeight() {
+        return secondWeight;
+    }
+
+    public void setSecondWeight(TextField secondWeight) {
+        this.secondWeight = secondWeight;
     }
 
     /**
@@ -203,74 +257,125 @@ public class Controller {
         @Override
         public void run() {
 
-            Platform.runLater(new Runnable() {
-                @Override public void run() {
-                    weightLabel.setText(Double.toString(weight));  //TODO отладка
-                }
-            });
-
 
             if (!pause) {
-//                try {
-//                    balances.sendRequest(Balances.REQUEST_WEIGHT);
-//
-//                } catch (SerialPortException e) {
-//                    e.printStackTrace();
-//                }
-            }
-            try {
-                if (programIsRun) {
+                try {
+                    balances.sendRequest(Balances.REQUEST_WEIGHT);
+                    String str = "";
 
-                    weight = weight + 0.01; //TODO отладка
+                    try {
+                        str = new String(Balances.convertResponse(balances.getResponse()));
+                    } catch (SerialPortTimeoutException e) {
+                        System.out.println("Ошибк времени соеденения");
+//                        if (timer != null) {
+//                            timer.cancel();
+//                            timer.purge();
+//                        }
 
-                    if (weight < firstW && !relayOneOn) {
-                        System.out.println("Включение первого реле");
 
-                        pause = true;
-                        balances.sendRequest(Balances.REQUEST_ON_RELAY1);
-                        Thread.sleep(200);
-                        balances.sendRequest(Balances.REQUEST_OFF_RELAY2);
-                        pause = false;
-                        relayOneOn = true;
-                        relayTwoOn = false;
+                        Platform.runLater(new Runnable() {
+                            @Override
+                            public void run() {
+                                Alert alert = new Alert(Alert.AlertType.ERROR);
+                                alert.setTitle("Error");
+                                alert.setHeaderText("Ошибка комуникации");
+                                alert.setContentText("Превышен интервал опроса. Нет ответа от устройства.");
+                                alert.showAndWait();
+                                e.printStackTrace();
+                            }
+                        });
 
-                    } else if (firstW <= weight && weight < secondW && !relayTwoOn) {
-                        System.out.println("Включение второго реле");
-
-                        pause = true;
-                        balances.sendRequest(Balances.REQUEST_OFF_RELAY1);
-                        Thread.sleep(200);
-                        balances.sendRequest(Balances.REQUEST_ON_RELAY2);
-
-                        pause = false;
-                        relayOneOn = false;
-                        relayTwoOn = true;
-
-                    } else if ( (secondW <= weight || weight < 0) && (relayOneOn || relayTwoOn)){
-                        System.out.println("Отключение обоих реле");
-
-                        pause = true;
-                        balances.sendRequest(Balances.REQUEST_OFF_RELAY1);
-                        Thread.sleep(200);
-                        balances.sendRequest(Balances.REQUEST_OFF_RELAY2);
-                        pause = false;
-                        relayOneOn = false;
-                        relayTwoOn = false;
                     }
-                }else if (relayOneOn || relayTwoOn){
-                    relayOneOn = false;
-                    relayTwoOn = false;
-                    balances.sendRequest(Balances.REQUEST_OFF_RELAY1);
-                    Thread.sleep(5000);
-                    balances.sendRequest(Balances.REQUEST_OFF_RELAY2);
+
+                    if (!str.equals("")) {
+                        str = str.trim();
+                        String finalStr = str;
+                        weight = Double.parseDouble(finalStr);
+                        Platform.runLater(new Runnable() {
+                            @Override
+                            public void run() {
+                                weightLabel.setText(finalStr);
+                            }
+                        });
+                    }
+
+                } catch (SerialPortException e) {
+                    System.out.println("Ошибк порта в методе на запрос ответ веса");
+                    Platform.runLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            Alert alert = new Alert(Alert.AlertType.ERROR);
+                            alert.setTitle("Error");
+                            alert.setHeaderText("Ошибка комуникации");
+                            alert.setContentText("Ошибка работы с COM портом устройства");
+
+                            alert.showAndWait();
+                            e.printStackTrace();
+                        }
+                    });
                 }
-            } catch (SerialPortException e) {
-                e.printStackTrace();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
+            }
+            /*
+             * блок управления реле.
+             */
+                try {
+                    if (programIsRun) {
+
+                        //weight = weight + 0.01; //TODO отладка
+
+                        if (weight < firstW && !relayOneOn) {
+                            System.out.println("Включение первого реле");
+
+                            pause = true;
+                            Thread.sleep(TIME_TREED_SLEEP);
+                            balances.sendRequest(Balances.REQUEST_ON_RELAY1);
+                            Thread.sleep(TIME_TREED_SLEEP);
+                            balances.sendRequest(Balances.REQUEST_OFF_RELAY2);
+                            pause = false;
+                            relayOneOn = true;
+                            relayTwoOn = false;
+
+                        } else if (firstW <= weight && weight < secondW && !relayTwoOn) {
+                            System.out.println("Включение второго реле");
+
+                            pause = true;
+                            Thread.sleep(TIME_TREED_SLEEP);
+                            balances.sendRequest(Balances.REQUEST_OFF_RELAY1);
+                            Thread.sleep(TIME_TREED_SLEEP);
+                            balances.sendRequest(Balances.REQUEST_ON_RELAY2);
+
+                            pause = false;
+                            relayOneOn = false;
+                            relayTwoOn = true;
+
+                        } else if ((secondW <= weight || weight < 0) && (relayOneOn || relayTwoOn)) {
+                            System.out.println("Отключение обоих реле");
+
+                            pause = true;
+                            Thread.sleep(TIME_TREED_SLEEP);
+                            balances.sendRequest(Balances.REQUEST_OFF_RELAY1);
+                            Thread.sleep(TIME_TREED_SLEEP);
+                            balances.sendRequest(Balances.REQUEST_OFF_RELAY2);
+                            pause = false;
+                            relayOneOn = false;
+                            relayTwoOn = false;
+                        }
+                    } else if (relayOneOn || relayTwoOn) {
+                        relayOneOn = false;
+                        relayTwoOn = false;
+                        Thread.sleep(TIME_TREED_SLEEP);
+                        balances.sendRequest(Balances.REQUEST_OFF_RELAY1);
+                        Thread.sleep(TIME_TREED_SLEEP);
+                        balances.sendRequest(Balances.REQUEST_OFF_RELAY2);
+                    }
+                } catch (SerialPortException e) {
+                    System.out.println("Ошибк порта в методе включение и выключение реле");
+                    e.printStackTrace();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
             }
         }
+
+
     }
-
-
-}

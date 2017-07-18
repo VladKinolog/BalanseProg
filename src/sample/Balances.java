@@ -21,6 +21,7 @@ public class Balances {
     public static final int []  REQUEST_ON_RELAY2 = {0x01,0x05,0x00,0x01,0xFF,0x00,0xDD,0xFA};
     public static final int []  REQUEST_OFF_RELAY2 = {0x01,0x05,0x00,0x01,0x00,0x00,0x9C,0x0A};
 
+
     private SerialPort serialPort;
     private byte [] response;
     //private static boolean checkSumCheck;
@@ -44,7 +45,7 @@ public class Balances {
                     SerialPort.PARITY_NONE);
 
         } catch (SerialPortException ex) {
-            System.out.println(ex);
+            ex.printStackTrace();
         }
     }
 
@@ -64,16 +65,19 @@ public class Balances {
 
     }
 
-    public void getResponse () {
+    public byte[] getResponse () throws SerialPortTimeoutException {
         try {
             if (serialPort != null) {
-                response = serialPort.readBytes(16, 200);
+               return response = serialPort.readBytes(16, 200);
             }
-        } catch (SerialPortTimeoutException e){
-            System.out.println("Превышение интервала ожидания");
-            e.printStackTrace();
+            else return null;
+//        } catch (SerialPortTimeoutException e){
+//            System.out.println("Превышение интервала ожидания");
+//            e.printStackTrace();
+ //           return null;
         } catch (SerialPortException e) {
             e.printStackTrace();
+            return null;
         }
     }
 
@@ -94,5 +98,20 @@ public class Balances {
     public void setSerialPort(SerialPort serialPort) {
         this.serialPort = serialPort;
     }
+
+    public static byte [] convertResponse (byte [] resp) {
+        byte [] response = new byte[9];
+        if (resp.length == 16) {
+            response [0] = resp [0];
+            int z = 1;
+            for (int i = 2; i < 10; i++) {
+                response [z] = resp [i];
+                z++;
+            }
+            return response;
+        } else return new byte [] {110,117,108,108} ;
+
+    }
+
 }
 
