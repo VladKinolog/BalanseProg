@@ -29,7 +29,7 @@ public class ConvertGrainGram {
      * @return
      */
     public static double gramToGrain (double gram){
-        return gram/15.432358352941;
+        return gram*15.43235835;
     }
 
     /**
@@ -38,7 +38,7 @@ public class ConvertGrainGram {
      * @return
      */
     public static double gramToGrain (int gram){
-        return gram/15.432358352941;
+        return gram*15.43235835;
     }
 }
 

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.scene.effect.*?>
 <?import javafx.scene.text.*?>
 <?import javafx.geometry.*?>
 <?import javafx.scene.control.*?>
@@ -18,15 +19,10 @@
             <items>
                   <MenuItem mnemonicParsing="false" text="Com Port">
                      <graphic>
-                        <ChoiceBox fx:id="choiceCom" prefWidth="10.0" />
+                        <ChoiceBox fx:id="choiceCom" />
                      </graphic>
                   </MenuItem>
               <MenuItem mnemonicParsing="false" text="Close" />
-            </items>
-          </Menu>
-          <Menu mnemonicParsing="false" text="Edit">
-            <items>
-              <MenuItem mnemonicParsing="false" text="Delete" />
             </items>
           </Menu>
           <Menu mnemonicParsing="false" text="Help">
@@ -47,21 +43,47 @@
               <items>
                 <AnchorPane maxWidth="160.0" minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0">
                      <children>
-                        <Label fx:id="weightLabel" contentDisplay="CENTER" layoutX="14.0" layoutY="67.0" prefHeight="77.0" prefWidth="108.0" text="Label" textAlignment="CENTER" AnchorPane.bottomAnchor="67.0" AnchorPane.leftAnchor="14.0" AnchorPane.rightAnchor="14.0" AnchorPane.topAnchor="67.0">
+                        <Label fx:id="weightLabel" alignment="CENTER" contentDisplay="CENTER" layoutY="67.0" prefHeight="79.0" prefWidth="135.0" text="0" textAlignment="CENTER" AnchorPane.bottomAnchor="67.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="1.0" AnchorPane.topAnchor="67.0">
                            <font>
-                              <Font size="42.0" />
+                              <Font size="36.0" />
                            </font>
                         </Label>
+                        <Label alignment="CENTER" layoutX="59.0" layoutY="127.0" prefHeight="19.0" prefWidth="39.0" text="grain">
+                           <font>
+                              <Font size="13.0" />
+                           </font>
+                        </Label>
+                        <Label fx:id="weightGramLabel" alignment="CENTER_RIGHT" layoutX="7.0" layoutY="198.0" prefHeight="17.0" prefWidth="46.0" text="0" textAlignment="RIGHT" />
+                        <Label layoutX="57.0" layoutY="197.0" prefHeight="17.0" prefWidth="45.0" text="gram" />
                      </children>
                   </AnchorPane>
-                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0">
+                <AnchorPane maxWidth="284.0" minHeight="0.0" minWidth="0.0" prefHeight="213.0" prefWidth="284.0">
                      <children>
-                        <TextField fx:id="firstWeight" layoutX="22.0" layoutY="26.0" prefHeight="25.0" prefWidth="89.0" promptText="Вес 1" />
-                        <TextField fx:id="secondWeight" layoutX="22.0" layoutY="70.0" prefHeight="25.0" prefWidth="91.0" promptText="Вес 2" />
-                        <Button fx:id="startButton" layoutX="153.0" layoutY="164.0" mnemonicParsing="false" onAction="#startBalancesWeight" prefHeight="35.0" prefWidth="60.0" text="Start" />
-                        <Button fx:id="endButton" layoutX="232.0" layoutY="164.0" mnemonicParsing="false" onAction="#endButtonPush" prefHeight="35.0" prefWidth="60.0" text="Finish" />
-                        <Button fx:id="torirovkaButton" layoutX="22.0" layoutY="163.0" mnemonicParsing="false" onAction="#onClickTorrirovka" prefHeight="37.0" prefWidth="66.0" text="Тор." />
-                        <Button layoutX="223.0" layoutY="20.0" mnemonicParsing="false" onAction="#onClickOnOff" prefHeight="37.0" prefWidth="69.0" text="Вкл/Выкл" />
+                        <TextField fx:id="firstWeight" layoutX="22.0" layoutY="14.0" prefHeight="50.0" prefWidth="150.0" promptText="Вес 1">
+                           <font>
+                              <Font size="22.0" />
+                           </font></TextField>
+                        <TextField fx:id="secondWeight" layoutX="22.0" layoutY="79.0" prefHeight="50.0" prefWidth="150.0" promptText="Вес 2">
+                           <font>
+                              <Font size="22.0" />
+                           </font></TextField>
+                        <Button fx:id="startButton" layoutX="22.0" layoutY="148.0" mnemonicParsing="false" onAction="#startBalancesWeight" prefHeight="50.0" prefWidth="60.0" text="Start">
+                           <font>
+                              <Font size="15.0" />
+                           </font></Button>
+                        <Button fx:id="endButton" layoutX="111.0" layoutY="149.0" mnemonicParsing="false" onAction="#endButtonPush" prefHeight="50.0" prefWidth="60.0" text="Finish">
+                           <font>
+                              <Font size="15.0" />
+                           </font></Button>
+                        <Button fx:id="torirovkaButton" layoutX="212.0" layoutY="149.0" mnemonicParsing="false" onAction="#onClickTorrirovka" prefHeight="50.0" prefWidth="60.0" text="Тоr.">
+                           <font>
+                              <Font size="15.0" />
+                           </font></Button>
+                        <Button layoutX="212.0" layoutY="14.0" mnemonicParsing="false" onAction="#onClickOnOff" prefHeight="50.0" prefWidth="60.0" text="OFF">
+                           <font>
+                              <Font size="15.0" />
+                           </font></Button>
+                        <ProgressIndicator fx:id="progressIndicator" layoutX="217.0" layoutY="81.0" prefHeight="50.0" prefWidth="50.0" />
                      </children>
                   </AnchorPane>
               </items>

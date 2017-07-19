@@ -14,6 +14,7 @@ import jssc.SerialPortList;
 import jssc.SerialPortTimeoutException;
 import sun.rmi.runtime.Log;
 
+import java.text.DecimalFormat;
 import java.util.Observable;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -28,6 +29,8 @@ public class Controller {
     @FXML
     private Label weightLabel;
     @FXML
+    private Label weightGramLabel;
+    @FXML
     private Button startButton;
     @FXML
     private Button endButton;
@@ -41,12 +44,18 @@ public class Controller {
     private ChoiceBox choiceCom;
     @FXML
     private Menu menuFile;
+    @FXML
+    private ProgressIndicator progressIndicator;
 
     private double weight;// = 0;
     private double firstW;
     private double secondW;
 
     private ObservableList<String> listCom;
+
+
+
+    private int numberCom;
 
     private Balances balances;
     private Timer timer = new Timer();
@@ -66,6 +75,7 @@ public class Controller {
     private void initialize(){
 
         System.out.println("Инициализация класса контроллера");
+        progressIndicator.setVisible(false);
 
         // слушатель выбора необходимолго ком порта
         choiceCom.getSelectionModel().selectedIndexProperty().addListener(new ChangeListener<Number>() {
@@ -84,12 +94,38 @@ public class Controller {
             }
         });
 
+
+
     }
 
 
 
     void setMainApp(Main mainApp){
         this.mainApp = mainApp;
+    }
+
+    public void createPort (int numComPort) {
+        if ( balances != null && balances.getSerialPort().isOpened()) {
+            try {
+                balances.closePort();
+            } catch (SerialPortException e) {
+                e.printStackTrace();
+            }
+            balances = null;
+        }
+
+        balances = new Balances(numComPort);
+
+        if (timer != null && balances.getSerialPort().isOpened()) {
+            timer.cancel();
+            timer.purge();
+
+            timer = new Timer();
+            myTimerTask = new MyTimerTask();
+
+
+            timer.schedule(myTimerTask, 500,500);
+        }
     }
 
     public void startBalancesWeight () throws SerialPortException {
@@ -121,6 +157,7 @@ public class Controller {
             alert.showAndWait();
 
         }
+        progressIndicator.setVisible(true);
 
         System.out.println("Запуск работы программы");
 
@@ -135,20 +172,10 @@ public class Controller {
     public void endButtonPush() {
 
         programIsRun = false;
-//        pause = true;
-//
-//        Thread.sleep(TIME_TREED_SLEEP);
-//        balances.sendRequest(Balances.REQUEST_OFF_RELAY1);
-//        Thread.sleep(TIME_TREED_SLEEP);
-//        balances.sendRequest(Balances.REQUEST_OFF_RELAY2);
-//        pause = false;
-
+        progressIndicator.setVisible(false);
 
         System.out.println("Остановка работы программы");
-//        timer.cancel();
-//        balances.sendRequest(Balances.REQUEST_OFF_RELAY1);
-//        weightLabel.setText("OFF");
-//        balances.clearPortBuffer();
+
     }
 
     /**
@@ -199,23 +226,9 @@ public class Controller {
         comIndex = comIndex.trim();
         comIndex = comIndex.replace("COM","");
 
-        if ( balances != null && balances.getSerialPort().isOpened()) {
-            balances.closePort();
-            balances = null;
-        }
+        numberCom = Integer.parseInt(comIndex);
 
-        balances = new Balances(Integer.parseInt(comIndex));
-
-        if (timer != null && balances.getSerialPort().isOpened()) {
-            timer.cancel();
-            timer.purge();
-
-            timer = new Timer();
-            myTimerTask = new MyTimerTask();
-
-
-        timer.schedule(myTimerTask, 500,500);
-        }
+        createPort(Integer.parseInt(comIndex));
 
     }
 
@@ -242,9 +255,18 @@ public class Controller {
         return secondWeight;
     }
 
+    public int getNumberCom() {
+        return numberCom;
+    }
+
+    public void setNumberCom(int numberCom) {
+        this.numberCom = numberCom;
+    }
+
     public void setSecondWeight(TextField secondWeight) {
         this.secondWeight = secondWeight;
     }
+
 
     /**
      * Класс таймер для циклического опроса.
@@ -253,12 +275,13 @@ public class Controller {
 
         private boolean relayOneOn = false;
         private boolean relayTwoOn = false;
+        private boolean finalPause = false;
 
         @Override
         public void run() {
 
 
-            if (!pause) {
+            if (!finalPause) {
                 try {
                     balances.sendRequest(Balances.REQUEST_WEIGHT);
                     String str = "";
@@ -267,10 +290,10 @@ public class Controller {
                         str = new String(Balances.convertResponse(balances.getResponse()));
                     } catch (SerialPortTimeoutException e) {
                         System.out.println("Ошибк времени соеденения");
-//                        if (timer != null) {
-//                            timer.cancel();
-//                            timer.purge();
-//                        }
+                        if (timer != null) {
+                            timer.cancel();
+                            timer.purge();
+                        }
 
 
                         Platform.runLater(new Runnable() {
@@ -289,11 +312,19 @@ public class Controller {
 
                     if (!str.equals("")) {
                         str = str.trim();
-                        String finalStr = str;
-                        weight = Double.parseDouble(finalStr);
+                        System.out.println(str);
+                        weight = Double.parseDouble(str);
+                        System.out.println(weight);
+                        weight = ConvertGrainGram.gramToGrain(weight);
+                        String weightStr = Double.toString(weight);//.substring(0,7);
+                        weightStr = new DecimalFormat("#0.00000").format(weight);
+                        String finalStr = weightStr;
+                        String finalGramWeight = str;
+                        System.out.println(finalStr);
                         Platform.runLater(new Runnable() {
                             @Override
                             public void run() {
+                                weightGramLabel.setText(finalGramWeight);
                                 weightLabel.setText(finalStr);
                             }
                         });
@@ -314,6 +345,7 @@ public class Controller {
                         }
                     });
                 }
+                finalPause = pause;
             }
             /*
              * блок управления реле.
