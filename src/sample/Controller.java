@@ -6,19 +6,14 @@ import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
-import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.media.AudioClip;
-import jssc.SerialPort;
 import jssc.SerialPortException;
 import jssc.SerialPortList;
 import jssc.SerialPortTimeoutException;
-import sun.rmi.runtime.Log;
 
 import java.text.DecimalFormat;
-import java.util.Observable;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -73,13 +68,16 @@ public class Controller {
     private Timer timer = new Timer(true);
     MyTimerTask myTimerTask = new MyTimerTask();
     Timer torTimer;
-    TorrirovkaTimer  torrirovkaTimer;
+    TarirovkaTimer tarirovkaTimer;
     private Main mainApp;
 
     private static volatile boolean  pause = false;
     private static volatile boolean programIsRun = false;
+    private static volatile boolean onTarirovka = false;
+    private static int iterErrorRead = 0;
     private static volatile long setTimeOnSecRelay;
     private static volatile long setTimeOffSecRelay;
+
 
     Image imageRefreshBut;
 
@@ -99,6 +97,7 @@ public class Controller {
         setTimeOnSecR.setTooltip (new Tooltip("Время догрузки при медленой подачи (сек.)"));
         torirovkaButton.setTooltip(new Tooltip("Торрировка"));
         refresh.setTooltip(new Tooltip("Попытка востановить связь с весами"));
+
         imageRefreshBut = new Image(String.valueOf(getClass().getResource("/resources/refresh.png")));
 
         refresh.setGraphic(new ImageView(imageRefreshBut));
@@ -289,20 +288,18 @@ public class Controller {
      * Обработка нажатия кнопки торировки
      */
     public void onClickTorrirovka() throws SerialPortException {
+
         System.out.println("Нажата кнопка торировки");
 
+
         if (balances != null && balances.getSerialPort().isOpened() && !programIsRun ) {
+            pause = true;
+            onTarirovka = true;
 
             torTimer = new Timer(true);
-            torrirovkaTimer = new TorrirovkaTimer();
+            tarirovkaTimer = new TarirovkaTimer();
 
-            pause = true;
-
-            balances.sendRequest(Balances.REQUEST_TOR);
-            weightLabel.setText("Торрир.");
-            weightGramLabel.setText("Торрир");
-
-            torTimer.schedule(torrirovkaTimer, 8000);
+            torTimer.schedule(tarirovkaTimer, 8000);
 
         }
     }
@@ -394,7 +391,7 @@ public class Controller {
     }
 
 
-    class TorrirovkaTimer extends TimerTask{
+    class TarirovkaTimer extends TimerTask{
 
         @Override
         public void run(){
@@ -415,40 +412,79 @@ public class Controller {
         private long timeOnSecondRelay = 0;
         private long timeOffSecondRelay = 0;
 
+
         @Override
         public void run() {
 
+            if (pause && onTarirovka) {
+                try {
+                    balances.sendRequest(Balances.REQUEST_TOR);
+                    onTarirovka = false;
+                    Thread.sleep(50);
+                    Platform.runLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            weightLabel.setText("Торрир.");
+                            weightGramLabel.setText("Торрир");
+                        }
+                    });
+
+                } catch (SerialPortException | InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+
+
+            if (!programIsRun) {
+                timeOnSecondRelay = 0;
+                timeIsSaved = false;
+            }
 
             if (!pause) {
                 try {
                     balances.sendRequest(Balances.REQUEST_WEIGHT);
                     String str = "";
 
+
                     try {
                         str = new String(Balances.convertResponse(balances.getResponse()));
                         System.out.println(str);
+                        iterErrorRead = 0;
+
                     } catch (SerialPortTimeoutException e) {
+                        iterErrorRead++;
+                        System.out.println("iterErrorRead = " + iterErrorRead);
                         System.out.println("Ошибка времени соеденения");
 
-                        if (timer != null) {
-                            timer.cancel();
-                            timer.purge();
-                        }
 
+                        if (iterErrorRead == 4) {
+                            iterErrorRead = 0;
 
-                        Platform.runLater(new Runnable() {
-                            @Override
-                            public void run() {
-                                weightLabel.setText("Ошибка");
-                                weightGramLabel.setText("Ошибка");
+                            Platform.runLater(new Runnable() {
+                                @Override
+                                public void run() {
+                                    weightLabel.setText("Ошибка");
+                                    weightGramLabel.setText("Ошибка");
                                 Alert alert = new Alert(Alert.AlertType.ERROR);
                                 alert.setTitle("Error");
                                 alert.setHeaderText("Ошибка комуникации");
                                 alert.setContentText("Превышен интервал опроса. Нет ответа от устройства.");
                                 alert.showAndWait();
-                                e.printStackTrace();
+                                }
+                            });
+
+                            if (timer != null) {
+                                timer.cancel();
+                                timer.purge();
                             }
-                        });
+
+
+
+                        } else {
+                            createPort(numberCom);
+                        }
+
+                        e.printStackTrace();
 
                     }
 
@@ -522,7 +558,6 @@ public class Controller {
                                 timeOnSecondRelay = System.currentTimeMillis();
                                 Thread.sleep(TIME_TREED_SLEEP);
                                 balances.sendRequest(Balances.REQUEST_OFF_RELAY1);
-
                             }
 
                             if (soundIsPlayed) playSound();
@@ -575,6 +610,9 @@ public class Controller {
                         Thread.sleep(TIME_TREED_SLEEP);
                         balances.sendRequest(Balances.REQUEST_OFF_RELAY2);
                     }
+
+
+
                 } catch (SerialPortException e) {
                     System.out.println("Ошибк порта в методе включение и выключение реле");
                     e.printStackTrace();
