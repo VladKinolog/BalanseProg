@@ -76,11 +76,11 @@
                            <font>
                               <Font size="15.0" />
                            </font></Button>
-                        <Button fx:id="torirovkaButton" layoutX="210.0" layoutY="180.0" mnemonicParsing="false" onAction="#onClickTorrirovka" prefHeight="50.0" prefWidth="60.0" text="Тоr.">
+                        <Button fx:id="torirovkaButton" layoutX="210.0" layoutY="180.0" mnemonicParsing="false" onAction="#onClickTorrirovka" prefHeight="50.0" prefWidth="60.0" text="Тar.">
                            <font>
                               <Font size="15.0" />
                            </font></Button>
-                        <Button layoutX="212.0" layoutY="14.0" mnemonicParsing="false" onAction="#onClickOnOff" prefHeight="50.0" prefWidth="60.0" text="OFF">
+                        <Button fx:id="offBalanse" layoutX="212.0" layoutY="14.0" mnemonicParsing="false" onAction="#onClickOnOff" prefHeight="50.0" prefWidth="60.0" text="OFF">
                            <font>
                               <Font size="15.0" />
                            </font></Button>

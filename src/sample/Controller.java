@@ -9,6 +9,7 @@ import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.text.Font;
 import jssc.SerialPortException;
 import jssc.SerialPortList;
 import jssc.SerialPortTimeoutException;
@@ -36,6 +37,8 @@ public class Controller {
     private Button torirovkaButton;
     @FXML
     private Button refresh;
+    @FXML
+    private Button offBalanse;
     @FXML
     private TextField firstWeight;
     @FXML
@@ -91,12 +94,20 @@ public class Controller {
         System.out.println("Инициализация класса контроллера");
         progressIndicator.setVisible(false);
 
-        firstWeight.setTooltip(new Tooltip("Значение веса для быстрой загрузки (grein)"));
-        secondWeight.setTooltip(new Tooltip("Значение веса для точной загрузки (grein)"));
-        setTimeOffSecR.setTooltip(new Tooltip("Время стабилизации веса (сек.)"));
-        setTimeOnSecR.setTooltip (new Tooltip("Время догрузки при медленой подачи (сек.)"));
-        torirovkaButton.setTooltip(new Tooltip("Торрировка"));
-        refresh.setTooltip(new Tooltip("Попытка востановить связь с весами"));
+//        Tooltip tooltip = new Tooltip();
+//        tooltip.setText("Значение веса для быстрой загрузки (grein)");
+//        tooltip.setFont(new Font(16));
+
+        firstWeight.setTooltip(new MyToolTip("Значение веса для быстрой загрузки (grein)",16));
+        secondWeight.setTooltip(new MyToolTip("Значение веса для точной загрузки (grein)", 16));
+        setTimeOffSecR.setTooltip(new MyToolTip("Время стабилизации веса (сек.)",16));
+        setTimeOnSecR.setTooltip (new MyToolTip("Время догрузки при медленой подачи (сек.)",16));
+        torirovkaButton.setTooltip(new MyToolTip("Тарировка",16));
+        refresh.setTooltip(new MyToolTip("Попытка востановить связь с весами",16));
+        startButton.setTooltip(new MyToolTip("Запуск взвешивания",16));
+        endButton.setTooltip(new MyToolTip("Остановка взвешивания",16));
+        offBalanse.setTooltip(new MyToolTip("Выключение весов",16));
+
 
         imageRefreshBut = new Image(String.valueOf(getClass().getResource("/resources/refresh.png")));
 
@@ -424,8 +435,8 @@ public class Controller {
                     Platform.runLater(new Runnable() {
                         @Override
                         public void run() {
-                            weightLabel.setText("Торрир.");
-                            weightGramLabel.setText("Торрир");
+                            weightLabel.setText("Тарировка");
+                            weightGramLabel.setText("Тарировка");
                         }
                     });
 
