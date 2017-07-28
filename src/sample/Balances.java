@@ -26,27 +26,22 @@ public class Balances {
     private byte [] response;
     //private static boolean checkSumCheck;
 
-    public Balances() {
+    public Balances() throws SerialPortException {
         this(1);
 
     }
 
-    public Balances(int numberComPort) {
+    public Balances(int numberComPort) throws SerialPortException {
         String comPort = "COM"+numberComPort;
 
         serialPort = new SerialPort(comPort);
 
-
-        try {
             serialPort.openPort();
             serialPort.setParams(SerialPort.BAUDRATE_9600,
                     SerialPort.DATABITS_8,
                     SerialPort.STOPBITS_1,
                     SerialPort.PARITY_NONE);
 
-        } catch (SerialPortException ex) {
-            ex.printStackTrace();
-        }
     }
 
     public boolean sendRequest (String request) throws SerialPortException {
@@ -68,7 +63,7 @@ public class Balances {
     public byte[] getResponse () throws SerialPortTimeoutException {
         try {
             if (serialPort != null) {
-               return response = serialPort.readBytes(16, 200);
+               return response = serialPort.readBytes(16, 500);
             }
             else return null;
 //        } catch (SerialPortTimeoutException e){

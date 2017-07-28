@@ -1,0 +1,9 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="BalanseProg:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/BalanseProg_jar</output-path>
+    <root id="archive" name="BalanseProg.jar">
+      <element id="module-output" name="BalanseProg" />
+      <element id="extracted-dir" path="$MAVEN_REPOSITORY$/org/everit/osgi/bundles/org.everit.osgi.bundles.org.scream3r.jssc/2.8.0/org.everit.osgi.bundles.org.scream3r.jssc-2.8.0.jar" path-in-jar="/" />
+    </root>
+  </artifact>
+</component>

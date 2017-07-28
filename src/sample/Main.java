@@ -5,10 +5,13 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.TextField;
+import javafx.scene.image.Image;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.media.AudioClip;
 import javafx.stage.Stage;
 import jssc.SerialPortException;
 
+import java.net.URL;
 import java.util.prefs.Preferences;
 
 public class Main extends Application {
@@ -18,10 +21,19 @@ public class Main extends Application {
     private BorderPane rootLayout;
     private Controller controller;
 
+    AudioClip clip;
+
     @Override
     public void start(Stage primaryStage) throws Exception{
+
+        System.out.println("Построение макета");
+        final URL resource = getClass().getResource("/resources/sound.wav");
+
+
+        clip = new AudioClip(resource.toString());
+
         this.primaryStage = primaryStage;
-        primaryStage.setTitle("Hello World");
+        primaryStage.setTitle("Libra");
 
         FXMLLoader loader = new FXMLLoader();
         loader.setLocation(Main.class.getResource("sample.fxml"));
@@ -61,16 +73,26 @@ public class Main extends Application {
         String firstWeight = pref.get("firstWeight", "0");
         String secondWeight = pref.get( "secondWeight", "0");
         String comNumber = pref.get("comNumber","0");
+        String setTimeOnSecRelay = pref.get("setTimeOnSecRelay","0");
+        String setTimeOffSecRelay = pref.get("setTimeOffSecRelay", "0");
+
 
         System.out.println("Загружен каом - COM"+comNumber);
 
         TextField firstW = controller.getFirstWeight();
         TextField secondW = controller.getSecondWeight();
+        TextField setTimeOnSecR = controller.getSetTimeOnSecR();
+        TextField setTimeOffSecR = controller.getSetTimeOffSecR();
 
         firstW.setText(firstWeight);
         secondW.setText(secondWeight);
+        setTimeOnSecR.setText(setTimeOnSecRelay);
+        setTimeOffSecR.setText(setTimeOffSecRelay);
 
-        if (!comNumber.equals("0") ) controller.createPort(Integer.parseInt(comNumber));
+        if (!comNumber.equals("0") ) {
+            controller.createPort(Integer.parseInt(comNumber));
+            controller.setNumberCom(Integer.parseInt(comNumber));
+        }
 
     }
 
@@ -82,6 +104,8 @@ public class Main extends Application {
 
         String firstWeight = controller.getFirstWeight().getText();
         String secondWeight = controller.getSecondWeight().getText();
+        String setTimeOnSecRelay = controller.getSetTimeOnSecR().getText();
+        String setTimeOffSecRelay = controller.getSetTimeOffSecR().getText();
         int comNumber = controller.getNumberCom();
 
         firstWeight = firstWeight.trim();
@@ -92,6 +116,12 @@ public class Main extends Application {
         }
         if (!secondWeight.equals("")) {
             pref.put("secondWeight", secondWeight);
+        }
+        if (!setTimeOnSecRelay.equals("")) {
+            pref.put("setTimeOnSecRelay",setTimeOnSecRelay);
+        }
+        if (!setTimeOffSecRelay.equals("")){
+            pref.put("setTimeOffSecRelay",setTimeOffSecRelay);
         }
         if (comNumber > 0) {
 

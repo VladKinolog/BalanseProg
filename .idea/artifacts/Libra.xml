@@ -1,0 +1,35 @@
+<component name="ArtifactManager">
+  <artifact type="javafx" name="Libra">
+    <output-path>$PROJECT_DIR$/out/artifacts/Libra</output-path>
+    <properties id="ant-postprocessing">
+      <options enabled="true" />
+    </properties>
+    <properties id="ant-preprocessing">
+      <options enabled="true" />
+    </properties>
+    <properties id="javafx-properties">
+      <options>
+        <option name="appClass" value="sample.Main" />
+        <option name="description" value="" />
+        <option name="htmlPlaceholderId" value="" />
+        <option name="icons">
+          <JavaFxApplicationIcons>
+            <option name="windowsIcon" value="$PROJECT_DIR$/balanceicon.ico" />
+          </JavaFxApplicationIcons>
+        </option>
+        <option name="nativeBundle" value="all" />
+        <option name="title" value="Libra" />
+        <option name="updateMode" value="always" />
+        <option name="vendor" value="VladKoveha" />
+        <option name="version" value="0.1" />
+      </options>
+    </properties>
+    <root id="root">
+      <element id="archive" name="BalanseProg.jar">
+        <element id="module-output" name="BalanseProg" />
+      </element>
+      <element id="artifact" artifact-name="BalanseProg:jar" />
+      <element id="library" level="project" name="org.everit.osgi.bundles:org.everit.osgi.bundles.org.scream3r.jssc:2.8.0" />
+    </root>
+  </artifact>
+</component>

@@ -8,6 +8,9 @@ import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.media.AudioClip;
 import jssc.SerialPort;
 import jssc.SerialPortException;
 import jssc.SerialPortList;
@@ -37,11 +40,20 @@ public class Controller {
     @FXML
     private Button torirovkaButton;
     @FXML
+    private Button refresh;
+    @FXML
     private TextField firstWeight;
     @FXML
     private TextField secondWeight;
     @FXML
+    private TextField setTimeOnSecR;
+    @FXML
+    private TextField setTimeOffSecR;
+    @FXML
     private ChoiceBox choiceCom;
+
+
+
     @FXML
     private Menu menuFile;
     @FXML
@@ -58,14 +70,18 @@ public class Controller {
     private int numberCom;
 
     private Balances balances;
-    private Timer timer = new Timer();
+    private Timer timer = new Timer(true);
     MyTimerTask myTimerTask = new MyTimerTask();
+    Timer torTimer;
+    TorrirovkaTimer  torrirovkaTimer;
     private Main mainApp;
 
     private static volatile boolean  pause = false;
     private static volatile boolean programIsRun = false;
+    private static volatile long setTimeOnSecRelay;
+    private static volatile long setTimeOffSecRelay;
 
-
+    Image imageRefreshBut;
 
     public Controller(){
     }
@@ -76,6 +92,19 @@ public class Controller {
 
         System.out.println("Инициализация класса контроллера");
         progressIndicator.setVisible(false);
+
+        firstWeight.setTooltip(new Tooltip("Значение веса для быстрой загрузки (grein)"));
+        secondWeight.setTooltip(new Tooltip("Значение веса для точной загрузки (grein)"));
+        setTimeOffSecR.setTooltip(new Tooltip("Время стабилизации веса (сек.)"));
+        setTimeOnSecR.setTooltip (new Tooltip("Время догрузки при медленой подачи (сек.)"));
+        torirovkaButton.setTooltip(new Tooltip("Торрировка"));
+        refresh.setTooltip(new Tooltip("Попытка востановить связь с весами"));
+        imageRefreshBut = new Image(String.valueOf(getClass().getResource("/resources/refresh.png")));
+
+        refresh.setGraphic(new ImageView(imageRefreshBut));
+
+
+
 
         // слушатель выбора необходимолго ком порта
         choiceCom.getSelectionModel().selectedIndexProperty().addListener(new ChangeListener<Number>() {
@@ -104,38 +133,60 @@ public class Controller {
         this.mainApp = mainApp;
     }
 
-    public void createPort (int numComPort) {
+    public void createPort (int numComPort)  {
         if ( balances != null && balances.getSerialPort().isOpened()) {
             try {
                 balances.closePort();
             } catch (SerialPortException e) {
                 e.printStackTrace();
+
             }
             balances = null;
         }
 
-        balances = new Balances(numComPort);
+        try {
+            balances = new Balances(numComPort);
+        } catch (SerialPortException e) {
+            e.printStackTrace();
 
-        if (timer != null && balances.getSerialPort().isOpened()) {
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Error");
+            alert.setHeaderText("Ошибка комуникации");
+            alert.setContentText("COM-"+ numComPort +" Занят другим устройством или не существует");
+            alert.showAndWait();
+        }
+
+        if (balances != null && timer != null && balances.getSerialPort().isOpened()) {
             timer.cancel();
             timer.purge();
 
-            timer = new Timer();
+            timer = new Timer(true);
             myTimerTask = new MyTimerTask();
 
-
-            timer.schedule(myTimerTask, 500,500);
+            timer.schedule(myTimerTask, 300,300);
         }
     }
 
     public void startBalancesWeight () throws SerialPortException {
+        int posIndex;
 
         String firstWStr = firstWeight.getText();
         String secondWStr = secondWeight.getText();
+        String setTimeOnSecRText = setTimeOnSecR.getText();
+        String setTimeOffSecRText = setTimeOffSecR.getText();
+
         firstWStr = firstWStr.replace(",",".").trim();
         secondWStr = secondWStr.replace(",",".").trim();
+        setTimeOnSecRText = setTimeOnSecRText.replace(",",".").trim();
 
-        if (firstWStr.equals("") || secondWStr.equals("") ){
+        if (setTimeOnSecRText.contains(".")) setTimeOnSecRText = setTimeOnSecRText.substring(0,setTimeOnSecRText.indexOf("."));
+
+        setTimeOffSecRText = setTimeOffSecRText.replace(",",".").trim();
+
+        if (setTimeOffSecRText.contains(".")) setTimeOffSecRText = setTimeOffSecRText.substring(0,setTimeOffSecRText.indexOf("."));
+
+        if (firstWStr.equals("") || secondWStr.equals("")){
+
             Alert alert = new Alert(Alert.AlertType.ERROR);
             alert.setTitle("Error");
             alert.setHeaderText("");
@@ -144,12 +195,48 @@ public class Controller {
             return;
         }
 
+        if (setTimeOnSecRText.equals("") ) setTimeOnSecRText = "0";
+        if (setTimeOffSecRText.equals("")) setTimeOffSecRText = "0";
+
+
         try {
+
             firstW = Double.parseDouble(firstWStr);
             secondW = Double.parseDouble(secondWStr);
+
+            if (firstW >= 0 || secondW >= 0) {
+
+                if (firstW < secondW) {
+                    setTimeOnSecRelay = Math.abs (Long.parseLong(setTimeOnSecRText));
+                    setTimeOnSecR.setText(Long.toString(setTimeOnSecRelay));
+                    setTimeOnSecRelay = setTimeOnSecRelay * 1000;
+
+                    setTimeOffSecRelay = Math.abs (Long.parseLong(setTimeOffSecRText));
+                    setTimeOffSecR.setText(Long.toString(setTimeOffSecRelay));
+                    setTimeOffSecRelay = setTimeOffSecRelay * 1000 + setTimeOnSecRelay;
+                } else {
+                    Alert alert = new Alert(Alert.AlertType.ERROR);
+                    alert.setTitle("Error");
+                    alert.setHeaderText("");
+                    alert.setContentText("Первый вес должен быть меньше второго");
+                    alert.showAndWait();
+                    return;
+                }
+            } else {
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("Error");
+                alert.setHeaderText("");
+                alert.setContentText("Данные в полях задержки и времени работы должны быть положительными!");
+                alert.showAndWait();
+                return;
+            }
+
             programIsRun = true;
+
         } catch (NumberFormatException e){
+
             e.printStackTrace();
+
             Alert alert = new Alert(Alert.AlertType.ERROR);
             alert.setTitle("Error");
             alert.setHeaderText("");
@@ -176,6 +263,17 @@ public class Controller {
 
         System.out.println("Остановка работы программы");
 
+        try {
+
+        Thread.sleep(TIME_TREED_SLEEP);
+        balances.sendRequest(Balances.REQUEST_OFF_RELAY1);
+        Thread.sleep(TIME_TREED_SLEEP);
+        balances.sendRequest(Balances.REQUEST_OFF_RELAY2);
+
+        } catch (SerialPortException | InterruptedException  e) {
+            e.printStackTrace();
+        }
+
     }
 
     /**
@@ -193,10 +291,19 @@ public class Controller {
     public void onClickTorrirovka() throws SerialPortException {
         System.out.println("Нажата кнопка торировки");
 
-        if (balances != null && balances.getSerialPort().isOpened()) {
+        if (balances != null && balances.getSerialPort().isOpened() && !programIsRun ) {
+
+            torTimer = new Timer(true);
+            torrirovkaTimer = new TorrirovkaTimer();
+
             pause = true;
+
             balances.sendRequest(Balances.REQUEST_TOR);
-            pause = false;
+            weightLabel.setText("Торрир.");
+            weightGramLabel.setText("Торрир");
+
+            torTimer.schedule(torrirovkaTimer, 8000);
+
         }
     }
 
@@ -211,6 +318,11 @@ public class Controller {
             balances.sendRequest(Balances.REQUEST_ON_OFF);
             pause = false;
         }
+    }
+
+    public void onClickRefresh () {
+
+        createPort(numberCom);
     }
 
 
@@ -243,6 +355,12 @@ public class Controller {
         }
     }
 
+    private void playSound(){
+        mainApp.clip.play(1.0);
+    }
+
+
+
     public TextField getFirstWeight() {
         return firstWeight;
     }
@@ -263,10 +381,26 @@ public class Controller {
         this.numberCom = numberCom;
     }
 
+    public TextField getSetTimeOnSecR() {
+        return setTimeOnSecR;
+    }
+
+    public TextField getSetTimeOffSecR() {
+        return setTimeOffSecR;
+    }
+
     public void setSecondWeight(TextField secondWeight) {
         this.secondWeight = secondWeight;
     }
 
+
+    class TorrirovkaTimer extends TimerTask{
+
+        @Override
+        public void run(){
+            pause = false;
+        }
+    }
 
     /**
      * Класс таймер для циклического опроса.
@@ -276,20 +410,26 @@ public class Controller {
         private boolean relayOneOn = false;
         private boolean relayTwoOn = false;
         private boolean finalPause = false;
+        private boolean timeIsSaved = false;
+        private boolean soundIsPlayed = false;
+        private long timeOnSecondRelay = 0;
+        private long timeOffSecondRelay = 0;
 
         @Override
         public void run() {
 
 
-            if (!finalPause) {
+            if (!pause) {
                 try {
                     balances.sendRequest(Balances.REQUEST_WEIGHT);
                     String str = "";
 
                     try {
                         str = new String(Balances.convertResponse(balances.getResponse()));
+                        System.out.println(str);
                     } catch (SerialPortTimeoutException e) {
-                        System.out.println("Ошибк времени соеденения");
+                        System.out.println("Ошибка времени соеденения");
+
                         if (timer != null) {
                             timer.cancel();
                             timer.purge();
@@ -299,6 +439,8 @@ public class Controller {
                         Platform.runLater(new Runnable() {
                             @Override
                             public void run() {
+                                weightLabel.setText("Ошибка");
+                                weightGramLabel.setText("Ошибка");
                                 Alert alert = new Alert(Alert.AlertType.ERROR);
                                 alert.setTitle("Error");
                                 alert.setHeaderText("Ошибка комуникации");
@@ -312,15 +454,18 @@ public class Controller {
 
                     if (!str.equals("")) {
                         str = str.trim();
-                        System.out.println(str);
-                        weight = Double.parseDouble(str);
-                        System.out.println(weight);
+                        str = str.replace(" ","");
+                        try {
+                            weight = Double.parseDouble(str);
+                        } catch (NumberFormatException e) {
+                            e.printStackTrace();
+                            weight = 99;
+                        }
                         weight = ConvertGrainGram.gramToGrain(weight);
-                        String weightStr = Double.toString(weight);//.substring(0,7);
-                        weightStr = new DecimalFormat("#0.00000").format(weight);
+                        String weightStr = new DecimalFormat("#0.00000").format(weight);
                         String finalStr = weightStr;
                         String finalGramWeight = str;
-                        System.out.println(finalStr);
+
                         Platform.runLater(new Runnable() {
                             @Override
                             public void run() {
@@ -345,7 +490,7 @@ public class Controller {
                         }
                     });
                 }
-                finalPause = pause;
+                //finalPause = pause;
             }
             /*
              * блок управления реле.
@@ -353,9 +498,7 @@ public class Controller {
                 try {
                     if (programIsRun) {
 
-                        //weight = weight + 0.01; //TODO отладка
-
-                        if (weight < firstW && !relayOneOn) {
+                        if  (weight < firstW && !relayOneOn) {
                             System.out.println("Включение первого реле");
 
                             pause = true;
@@ -363,24 +506,51 @@ public class Controller {
                             balances.sendRequest(Balances.REQUEST_ON_RELAY1);
                             Thread.sleep(TIME_TREED_SLEEP);
                             balances.sendRequest(Balances.REQUEST_OFF_RELAY2);
+
+
+
                             pause = false;
                             relayOneOn = true;
                             relayTwoOn = false;
+                            timeIsSaved = false;
+                            soundIsPlayed = true;
 
-                        } else if (firstW <= weight && weight < secondW && !relayTwoOn) {
-                            System.out.println("Включение второго реле");
+                        } else if (firstW <= weight && weight < secondW) {
+                            System.out.println("Включение второго реле" + (System.currentTimeMillis() - timeOnSecondRelay));
 
-                            pause = true;
-                            Thread.sleep(TIME_TREED_SLEEP);
-                            balances.sendRequest(Balances.REQUEST_OFF_RELAY1);
-                            Thread.sleep(TIME_TREED_SLEEP);
-                            balances.sendRequest(Balances.REQUEST_ON_RELAY2);
+                            if (!timeIsSaved) {
+                                timeOnSecondRelay = System.currentTimeMillis();
+                                Thread.sleep(TIME_TREED_SLEEP);
+                                balances.sendRequest(Balances.REQUEST_OFF_RELAY1);
 
-                            pause = false;
-                            relayOneOn = false;
-                            relayTwoOn = true;
+                            }
 
-                        } else if ((secondW <= weight || weight < 0) && (relayOneOn || relayTwoOn)) {
+                            if (soundIsPlayed) playSound();
+
+                            soundIsPlayed = false;
+                            timeIsSaved = true;
+
+
+                            if ((System.currentTimeMillis() - timeOnSecondRelay) > setTimeOnSecRelay && !relayTwoOn){
+                                pause = true;
+                                System.out.println("Режим паузы во время догрузки ");
+                                Thread.sleep(TIME_TREED_SLEEP);
+                                balances.sendRequest(Balances.REQUEST_ON_RELAY2);
+                                relayTwoOn = true;
+                                pause = false;
+
+                            } else if ((System.currentTimeMillis() - timeOnSecondRelay) > setTimeOffSecRelay && relayTwoOn ) {
+                                pause = true;
+                                System.out.println("Режим  догрузки ");
+                                Thread.sleep(TIME_TREED_SLEEP);
+                                if (setTimeOnSecRelay != 0) balances.sendRequest(Balances.REQUEST_OFF_RELAY2);
+                                relayTwoOn = false;
+                                pause = false;
+                                timeIsSaved = false;
+                            }
+
+
+                        } else if (secondW <= weight && (relayOneOn || relayTwoOn)) {
                             System.out.println("Отключение обоих реле");
 
                             pause = true;
@@ -388,10 +558,15 @@ public class Controller {
                             balances.sendRequest(Balances.REQUEST_OFF_RELAY1);
                             Thread.sleep(TIME_TREED_SLEEP);
                             balances.sendRequest(Balances.REQUEST_OFF_RELAY2);
+
+                            playSound();
+
                             pause = false;
                             relayOneOn = false;
                             relayTwoOn = false;
+                            timeIsSaved = false;
                         }
+
                     } else if (relayOneOn || relayTwoOn) {
                         relayOneOn = false;
                         relayTwoOn = false;

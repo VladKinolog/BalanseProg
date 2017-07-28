@@ -11,7 +11,7 @@
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
 
-<BorderPane maxHeight="240.0" maxWidth="450.0" minHeight="240.0" minWidth="450.0" prefHeight="240.0" prefWidth="450.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="sample.Controller">
+<BorderPane maxHeight="271.0" maxWidth="450.0" minHeight="240.0" minWidth="450.0" prefHeight="271.0" prefWidth="450.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="sample.Controller">
    <top>
       <MenuBar BorderPane.alignment="CENTER">
         <menus>
@@ -34,7 +34,7 @@
       </MenuBar>
    </top>
    <center>
-    <AnchorPane minHeight="0.0" minWidth="0.0" BorderPane.alignment="CENTER">
+    <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="213.0" prefWidth="450.0" BorderPane.alignment="CENTER">
          <opaqueInsets>
             <Insets />
          </opaqueInsets>
@@ -48,34 +48,35 @@
                               <Font size="36.0" />
                            </font>
                         </Label>
-                        <Label alignment="CENTER" layoutX="59.0" layoutY="127.0" prefHeight="19.0" prefWidth="39.0" text="grain">
+                        <Label alignment="CENTER" layoutX="59.0" layoutY="142.0" prefHeight="19.0" prefWidth="39.0" text="grain">
                            <font>
                               <Font size="13.0" />
                            </font>
                         </Label>
-                        <Label fx:id="weightGramLabel" alignment="CENTER_RIGHT" layoutX="7.0" layoutY="198.0" prefHeight="17.0" prefWidth="46.0" text="0" textAlignment="RIGHT" />
-                        <Label layoutX="57.0" layoutY="197.0" prefHeight="17.0" prefWidth="45.0" text="gram" />
+                        <Label fx:id="weightGramLabel" alignment="CENTER_RIGHT" layoutX="7.0" layoutY="227.0" prefHeight="17.0" prefWidth="46.0" text="0" textAlignment="RIGHT" />
+                        <Label layoutX="57.0" layoutY="226.0" prefHeight="17.0" prefWidth="45.0" text="gram" />
+                        <Button fx:id="refresh" layoutX="7.0" layoutY="6.0" maxHeight="32.0" maxWidth="32.0" minHeight="32.0" minWidth="32.0" mnemonicParsing="false" onAction="#onClickRefresh" prefHeight="32.0" prefWidth="32.0" />
                      </children>
                   </AnchorPane>
                 <AnchorPane maxWidth="284.0" minHeight="0.0" minWidth="0.0" prefHeight="213.0" prefWidth="284.0">
                      <children>
-                        <TextField fx:id="firstWeight" layoutX="22.0" layoutY="14.0" prefHeight="50.0" prefWidth="150.0" promptText="Вес 1">
+                        <TextField fx:id="firstWeight" layoutX="22.0" layoutY="51.0" prefHeight="50.0" prefWidth="150.0" promptText="Вес 1">
                            <font>
                               <Font size="22.0" />
                            </font></TextField>
-                        <TextField fx:id="secondWeight" layoutX="22.0" layoutY="79.0" prefHeight="50.0" prefWidth="150.0" promptText="Вес 2">
+                        <TextField fx:id="secondWeight" layoutX="22.0" layoutY="115.0" prefHeight="50.0" prefWidth="150.0" promptText="Вес 2">
                            <font>
                               <Font size="22.0" />
                            </font></TextField>
-                        <Button fx:id="startButton" layoutX="22.0" layoutY="148.0" mnemonicParsing="false" onAction="#startBalancesWeight" prefHeight="50.0" prefWidth="60.0" text="Start">
+                        <Button fx:id="startButton" layoutX="23.0" layoutY="179.0" mnemonicParsing="false" onAction="#startBalancesWeight" prefHeight="50.0" prefWidth="60.0" text="Start">
                            <font>
                               <Font size="15.0" />
                            </font></Button>
-                        <Button fx:id="endButton" layoutX="111.0" layoutY="149.0" mnemonicParsing="false" onAction="#endButtonPush" prefHeight="50.0" prefWidth="60.0" text="Finish">
+                        <Button fx:id="endButton" layoutX="111.0" layoutY="180.0" mnemonicParsing="false" onAction="#endButtonPush" prefHeight="50.0" prefWidth="60.0" text="Finish">
                            <font>
                               <Font size="15.0" />
                            </font></Button>
-                        <Button fx:id="torirovkaButton" layoutX="212.0" layoutY="149.0" mnemonicParsing="false" onAction="#onClickTorrirovka" prefHeight="50.0" prefWidth="60.0" text="Тоr.">
+                        <Button fx:id="torirovkaButton" layoutX="210.0" layoutY="180.0" mnemonicParsing="false" onAction="#onClickTorrirovka" prefHeight="50.0" prefWidth="60.0" text="Тоr.">
                            <font>
                               <Font size="15.0" />
                            </font></Button>
@@ -83,7 +84,9 @@
                            <font>
                               <Font size="15.0" />
                            </font></Button>
-                        <ProgressIndicator fx:id="progressIndicator" layoutX="217.0" layoutY="81.0" prefHeight="50.0" prefWidth="50.0" />
+                        <ProgressIndicator fx:id="progressIndicator" layoutX="217.0" layoutY="99.0" prefHeight="50.0" prefWidth="50.0" />
+                        <TextField fx:id="setTimeOnSecR" layoutX="23.0" layoutY="14.0" prefHeight="25.0" prefWidth="65.0" promptText="пауза" />
+                        <TextField fx:id="setTimeOffSecR" layoutX="106.0" layoutY="14.0" prefHeight="25.0" prefWidth="65.0" promptText="работа" />
                      </children>
                   </AnchorPane>
               </items>
