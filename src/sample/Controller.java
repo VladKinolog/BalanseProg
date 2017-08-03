@@ -48,6 +48,8 @@ public class Controller {
     @FXML
     private TextField setTimeOffSecR;
     @FXML
+    private TextField setDeltaLimit;
+    @FXML
     private ChoiceBox choiceCom;
 
 
@@ -60,6 +62,7 @@ public class Controller {
     private double weight;// = 0;
     private double firstW;
     private double secondW;
+    private double deltaLimit;
 
     private ObservableList<String> listCom;
 
@@ -107,6 +110,7 @@ public class Controller {
         startButton.setTooltip(new MyToolTip("Запуск взвешивания",16));
         endButton.setTooltip(new MyToolTip("Остановка взвешивания",16));
         offBalanse.setTooltip(new MyToolTip("Выключение весов",16));
+        setDeltaLimit.setTooltip(new MyToolTip("Предел точности взвешивания",16));
 
 
         imageRefreshBut = new Image(String.valueOf(getClass().getResource("/resources/refresh.png")));
@@ -184,10 +188,12 @@ public class Controller {
         String secondWStr = secondWeight.getText();
         String setTimeOnSecRText = setTimeOnSecR.getText();
         String setTimeOffSecRText = setTimeOffSecR.getText();
+        String setDeltLimit = setDeltaLimit.getText();
 
         firstWStr = firstWStr.replace(",",".").trim();
         secondWStr = secondWStr.replace(",",".").trim();
         setTimeOnSecRText = setTimeOnSecRText.replace(",",".").trim();
+        setDeltLimit = setDeltLimit.replace(",",".").trim();
 
         if (setTimeOnSecRText.contains(".")) setTimeOnSecRText = setTimeOnSecRText.substring(0,setTimeOnSecRText.indexOf("."));
 
@@ -207,12 +213,17 @@ public class Controller {
 
         if (setTimeOnSecRText.equals("") ) setTimeOnSecRText = "0";
         if (setTimeOffSecRText.equals("")) setTimeOffSecRText = "0";
+        if (setDeltLimit.equals("")) setDeltLimit = "0";
 
 
         try {
 
             firstW = Double.parseDouble(firstWStr);
             secondW = Double.parseDouble(secondWStr);
+            deltaLimit = Double.parseDouble(setDeltLimit);
+
+            deltaLimit = Math.abs(deltaLimit);
+            setDeltaLimit.setText(Double.toString(deltaLimit));
 
             if (firstW >= 0 || secondW >= 0) {
 
