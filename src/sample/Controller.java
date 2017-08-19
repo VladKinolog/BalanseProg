@@ -9,6 +9,8 @@ import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.paint.Color;
+import javafx.scene.paint.Paint;
 import javafx.scene.text.Font;
 import jssc.SerialPortException;
 import jssc.SerialPortList;
@@ -188,20 +190,32 @@ public class Controller {
         String secondWStr = secondWeight.getText();
         String setTimeOnSecRText = setTimeOnSecR.getText();
         String setTimeOffSecRText = setTimeOffSecR.getText();
-        String setDeltLimit = setDeltaLimit.getText();
+        String setDeltaLimit = this.setDeltaLimit.getText();
 
         firstWStr = firstWStr.replace(",",".").trim();
         secondWStr = secondWStr.replace(",",".").trim();
-        setTimeOnSecRText = setTimeOnSecRText.replace(",",".").trim();
-        setDeltLimit = setDeltLimit.replace(",",".").trim();
+        setDeltaLimit = setDeltaLimit.replace(",",".").trim();
 
-        if (setTimeOnSecRText.contains(".")) setTimeOnSecRText = setTimeOnSecRText.substring(0,setTimeOnSecRText.indexOf("."));
+        setTimeOnSecRText = setTimeOnSecRText.replace(",",".").trim();
+
+        if (setTimeOnSecRText.contains(".")) {
+
+            setTimeOnSecRText = setTimeOnSecRText.substring(0,setTimeOnSecRText.indexOf(".") + 2);
+
+            if (!setTimeOnSecRText.endsWith("0")) setTimeOnSecRText = (setTimeOnSecRText.substring(0, setTimeOnSecRText.indexOf(".") + 1)) + "5";
+        } //else setTimeOnSecRText = setTimeOnSecRText + ".0";
 
         setTimeOffSecRText = setTimeOffSecRText.replace(",",".").trim();
 
-        if (setTimeOffSecRText.contains(".")) setTimeOffSecRText = setTimeOffSecRText.substring(0,setTimeOffSecRText.indexOf("."));
+        if (setTimeOffSecRText.contains(".")) {
 
-        if (firstWStr.equals("") || secondWStr.equals("")){
+            setTimeOffSecRText = setTimeOffSecRText.substring(0, setTimeOffSecRText.indexOf(".") + 2);
+
+            if (!setTimeOffSecRText.endsWith("0")) setTimeOffSecRText = (setTimeOffSecRText.substring(0,setTimeOffSecRText.indexOf(".") + 1 )) + "5";
+
+        }// else setTimeOffSecRText = setTimeOffSecRText + ".0";
+
+        if (firstWStr.equals("") || secondWStr.equals("") || setDeltaLimit.equals("")){
 
             Alert alert = new Alert(Alert.AlertType.ERROR);
             alert.setTitle("Error");
@@ -213,28 +227,37 @@ public class Controller {
 
         if (setTimeOnSecRText.equals("") ) setTimeOnSecRText = "0";
         if (setTimeOffSecRText.equals("")) setTimeOffSecRText = "0";
-        if (setDeltLimit.equals("")) setDeltLimit = "0";
+        if (setDeltaLimit.equals("")) setDeltaLimit = "0";
 
 
         try {
 
             firstW = Double.parseDouble(firstWStr);
             secondW = Double.parseDouble(secondWStr);
-            deltaLimit = Double.parseDouble(setDeltLimit);
+            deltaLimit = Double.parseDouble(setDeltaLimit);
 
             deltaLimit = Math.abs(deltaLimit);
-            setDeltaLimit.setText(Double.toString(deltaLimit));
+
+            this.setTimeOnSecR.setText(setTimeOnSecRText);
+            setTimeOnSecRText = setTimeOnSecRText.replace(".","");
+            this.setTimeOffSecR.setText(setTimeOffSecRText);
+            setTimeOffSecRText = setTimeOffSecRText.replace(".","");
+
+            this.setDeltaLimit.setText(Double.toString(deltaLimit));
+
 
             if (firstW >= 0 || secondW >= 0) {
 
                 if (firstW < secondW) {
+
                     setTimeOnSecRelay = Math.abs (Long.parseLong(setTimeOnSecRText));
-                    setTimeOnSecR.setText(Long.toString(setTimeOnSecRelay));
-                    setTimeOnSecRelay = setTimeOnSecRelay * 1000;
+                    //setTimeOnSecR.setText(Long.toString(setTimeOnSecRelay));
+                    setTimeOnSecRelay = setTimeOnSecRelay * 100;
 
                     setTimeOffSecRelay = Math.abs (Long.parseLong(setTimeOffSecRText));
-                    setTimeOffSecR.setText(Long.toString(setTimeOffSecRelay));
-                    setTimeOffSecRelay = setTimeOffSecRelay * 1000 + setTimeOnSecRelay;
+                    //setTimeOffSecR.setText(Long.toString(setTimeOffSecRelay));
+                    setTimeOffSecRelay = setTimeOffSecRelay * 100 + setTimeOnSecRelay;
+
                 } else {
                     Alert alert = new Alert(Alert.AlertType.ERROR);
                     alert.setTitle("Error");
@@ -408,8 +431,24 @@ public class Controller {
         return setTimeOffSecR;
     }
 
+    public TextField getSetDeltaLimit() {
+        return setDeltaLimit;
+    }
+
     public void setSecondWeight(TextField secondWeight) {
         this.secondWeight = secondWeight;
+    }
+
+    // утелита для изменения цвета лебла веса в другом потоке
+    private void changeLabelColor(Paint paint) {
+
+        Platform.runLater(new Runnable() {
+            @Override
+            public void run() {
+                weightLabel.setTextFill(paint);
+                weightGramLabel.setTextFill(paint);
+            }
+        });
     }
 
 
@@ -454,6 +493,15 @@ public class Controller {
                 } catch (SerialPortException | InterruptedException e) {
                     e.printStackTrace();
                 }
+            }
+
+            // Подсвечивание когда значение находится в заданном пределе
+            if ( weight > (secondW - deltaLimit) && weight <= (secondW + deltaLimit)) {
+                changeLabelColor(Color.GREEN);
+            } else if (weight > (secondW + deltaLimit)) {
+                changeLabelColor(Color.RED);
+            } else {
+                changeLabelColor(Color.BLACK);
             }
 
 
@@ -632,7 +680,6 @@ public class Controller {
                         Thread.sleep(TIME_TREED_SLEEP);
                         balances.sendRequest(Balances.REQUEST_OFF_RELAY2);
                     }
-
 
 
                 } catch (SerialPortException e) {

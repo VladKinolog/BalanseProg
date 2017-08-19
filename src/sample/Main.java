@@ -75,6 +75,7 @@ public class Main extends Application {
         String comNumber = pref.get("comNumber","0");
         String setTimeOnSecRelay = pref.get("setTimeOnSecRelay","0");
         String setTimeOffSecRelay = pref.get("setTimeOffSecRelay", "0");
+        String setDeltaLimit = pref.get("setDeltaLimit", "0");
 
 
         System.out.println("Загружен каом - COM"+comNumber);
@@ -83,11 +84,14 @@ public class Main extends Application {
         TextField secondW = controller.getSecondWeight();
         TextField setTimeOnSecR = controller.getSetTimeOnSecR();
         TextField setTimeOffSecR = controller.getSetTimeOffSecR();
+        TextField setDeltaL = controller.getSetDeltaLimit();
 
         firstW.setText(firstWeight);
         secondW.setText(secondWeight);
         setTimeOnSecR.setText(setTimeOnSecRelay);
         setTimeOffSecR.setText(setTimeOffSecRelay);
+        setDeltaL.setText(setDeltaLimit);
+
 
         if (!comNumber.equals("0") ) {
             controller.createPort(Integer.parseInt(comNumber));
@@ -106,6 +110,7 @@ public class Main extends Application {
         String secondWeight = controller.getSecondWeight().getText();
         String setTimeOnSecRelay = controller.getSetTimeOnSecR().getText();
         String setTimeOffSecRelay = controller.getSetTimeOffSecR().getText();
+        String setDeltaLimit = controller.getSetDeltaLimit().getText();
         int comNumber = controller.getNumberCom();
 
         firstWeight = firstWeight.trim();
@@ -122,6 +127,9 @@ public class Main extends Application {
         }
         if (!setTimeOffSecRelay.equals("")){
             pref.put("setTimeOffSecRelay",setTimeOffSecRelay);
+        }
+        if (!setDeltaLimit.equals("")) {
+            pref.put("setDeltaLimit",setDeltaLimit);
         }
         if (comNumber > 0) {
 
