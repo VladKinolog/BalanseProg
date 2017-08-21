@@ -1,16 +1,18 @@
 package sample;
 
 import javafx.application.Application;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.TextField;
-import javafx.scene.image.Image;
+import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.media.AudioClip;
 import javafx.stage.Stage;
 import jssc.SerialPortException;
 
+import java.io.IOException;
 import java.net.URL;
 import java.util.prefs.Preferences;
 
@@ -20,8 +22,36 @@ public class Main extends Application {
     private Stage primaryStage;
     private BorderPane rootLayout;
     private Controller controller;
+    private ObservableList<BalancesPrefModel> balancesPrefList = FXCollections.observableArrayList();
+
+    /*
+        Получение ссылки на список настроеек веса и др.
+     */
+    public ObservableList<BalancesPrefModel> getBalancesPrefList() {
+        return balancesPrefList;
+    }
+
+    public Stage getPrimaryStage() {
+        return primaryStage;
+    }
 
     AudioClip clip;
+
+    //TODO Удалить после отладки (заполнение списка фиктивными данными)
+    public Main(){
+        balancesPrefList.add(new BalancesPrefModel("первая запись"));
+        balancesPrefList.add(new BalancesPrefModel("вторая запись"));
+        balancesPrefList.add(new BalancesPrefModel("третья запись"));
+        balancesPrefList.add(new BalancesPrefModel("четвертая запись"));
+        balancesPrefList.add(new BalancesPrefModel("пятая запись"));
+        balancesPrefList.add(new BalancesPrefModel("шестая запись"));
+        balancesPrefList.add(new BalancesPrefModel("седьмая запись"));
+        balancesPrefList.add(new BalancesPrefModel("восьмая запись"));
+        balancesPrefList.add(new BalancesPrefModel("девятая запись"));
+        balancesPrefList.add(new BalancesPrefModel("десятая запись"));
+    }
+
+
 
     @Override
     public void start(Stage primaryStage) throws Exception{
@@ -53,6 +83,31 @@ public class Main extends Application {
         getPreferences();
 
 
+    }
+
+    public void startBalancesProp(){
+
+        try {
+            FXMLLoader loader = new FXMLLoader();
+            loader.setLocation(Main.class.getResource("balancesPropList.fxml"));
+
+            AnchorPane page = (AnchorPane) loader.load();
+
+            Stage dialogStage = new Stage();
+            dialogStage.initOwner(primaryStage);
+
+            Scene scene = new Scene(page);
+            dialogStage.setScene(scene);
+
+
+            BalancesPropController controller = loader.getController();
+            controller.setDialogStage(dialogStage);
+            controller.setBalancesPrefList(balancesPrefList);
+
+            dialogStage.show();
+        } catch (IOException e){
+            e.printStackTrace();
+        }
     }
 
     @Override

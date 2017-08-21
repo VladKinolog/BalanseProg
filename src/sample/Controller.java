@@ -42,6 +42,10 @@ public class Controller {
     @FXML
     private Button offBalanse;
     @FXML
+    private Button loadButton;
+    @FXML
+    private Button saveButton;
+    @FXML
     private TextField firstWeight;
     @FXML
     private TextField secondWeight;
@@ -365,6 +369,16 @@ public class Controller {
     public void onClickRefresh () {
 
         createPort(numberCom);
+    }
+
+    public void onClickLoadButton () {
+
+        mainApp.startBalancesProp();
+
+    }
+
+    public void onClickSavebutton(){
+
     }
 
 
