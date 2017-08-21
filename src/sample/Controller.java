@@ -9,6 +9,9 @@ import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.Background;
+import javafx.scene.layout.BackgroundFill;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
 import javafx.scene.text.Font;
@@ -53,6 +56,10 @@ public class Controller {
     private TextField setDeltaLimit;
     @FXML
     private ChoiceBox choiceCom;
+    @FXML
+    private SplitPane splitPane;
+    @FXML
+    private AnchorPane pane;
 
 
 
@@ -451,6 +458,26 @@ public class Controller {
         });
     }
 
+    private void changeLabelColor(String color) {
+
+        Platform.runLater(new Runnable() {
+            @Override
+            public void run() {
+                weightLabel.setStyle("-fx-background-color:"+ color);
+            }
+        });
+    }
+
+    private void changePanelColor(String color) {
+
+        Platform.runLater(new Runnable() {
+            @Override
+            public void run() {
+                pane.setStyle("-fx-background-color:"+ color);
+            }
+        });
+    }
+
 
     class TarirovkaTimer extends TimerTask{
 
@@ -495,19 +522,28 @@ public class Controller {
                 }
             }
 
-            // Подсвечивание когда значение находится в заданном пределе
-            if ( weight > (secondW - deltaLimit) && weight <= (secondW + deltaLimit)) {
-                changeLabelColor(Color.GREEN);
-            } else if (weight > (secondW + deltaLimit)) {
-                changeLabelColor(Color.RED);
-            } else {
-                changeLabelColor(Color.BLACK);
-            }
 
 
-            if (!programIsRun) {
+
+            if (programIsRun) {
+                // Подсвечивание когда значение находится в заданном пределе
+                if ( weight > (secondW - deltaLimit) && weight <= (secondW + deltaLimit)) {
+                    //changeLabelColor(Color.GREEN);
+                    //changeLabelColor("#33F449;");
+                    changePanelColor("#33F449;");
+                } else if (weight > (secondW + deltaLimit)) {
+                    //changeLabelColor(Color.RED);
+                    //changeLabelColor("#ff4949;");
+                    changePanelColor("#ff4949;");
+                } else {
+                    //changeLabelColor(Color.BLACK);
+                    //changeLabelColor("transparent;");
+                    changePanelColor("transparent;");
+                }
+            } else  {
                 timeOnSecondRelay = 0;
                 timeIsSaved = false;
+                changePanelColor("transparent;");
             }
 
             if (!pause) {

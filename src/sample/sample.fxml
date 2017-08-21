@@ -41,9 +41,9 @@
             <Insets />
          </opaqueInsets>
          <children>
-            <SplitPane dividerPositions="0.31092436974789917" prefHeight="261.0" prefWidth="450.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+            <SplitPane fx:id="splitPane" dividerPositions="0.31092436974789917" prefHeight="261.0" prefWidth="450.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
               <items>
-                <AnchorPane maxWidth="160.0" minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0">
+                <AnchorPane fx:id="pane" maxWidth="160.0" minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0">
                      <children>
                         <Label fx:id="weightLabel" alignment="CENTER" contentDisplay="CENTER" layoutY="65.0" prefHeight="79.0" prefWidth="135.0" text="0" textAlignment="CENTER" AnchorPane.bottomAnchor="69.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="65.0">
                            <font>
