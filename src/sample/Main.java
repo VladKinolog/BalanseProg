@@ -22,14 +22,16 @@ public class Main extends Application {
     private Controller controller;
 
     AudioClip clip;
+    AudioClip finichClip;
 
     @Override
     public void start(Stage primaryStage) throws Exception{
 
         System.out.println("Построение макета");
         final URL resource = getClass().getResource("/resources/sound.wav");
+        final URL finishResource =  getClass().getResource("/resources/soundfinish.wav");
 
-
+        finichClip = new AudioClip(finishResource.toString());
         clip = new AudioClip(resource.toString());
 
         this.primaryStage = primaryStage;

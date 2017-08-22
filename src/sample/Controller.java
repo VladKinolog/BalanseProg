@@ -186,7 +186,7 @@ public class Controller {
             timer = new Timer(true);
             myTimerTask = new MyTimerTask();
 
-            timer.schedule(myTimerTask, 300,300);
+            timer.schedule(myTimerTask, 250,250);
         }
     }
 
@@ -210,7 +210,7 @@ public class Controller {
             setTimeOnSecRText = setTimeOnSecRText.substring(0,setTimeOnSecRText.indexOf(".") + 2);
 
             if (!setTimeOnSecRText.endsWith("0")) setTimeOnSecRText = (setTimeOnSecRText.substring(0, setTimeOnSecRText.indexOf(".") + 1)) + "5";
-        } //else setTimeOnSecRText = setTimeOnSecRText + ".0";
+        } else setTimeOnSecRText = setTimeOnSecRText + ".0";
 
         setTimeOffSecRText = setTimeOffSecRText.replace(",",".").trim();
 
@@ -220,7 +220,7 @@ public class Controller {
 
             if (!setTimeOffSecRText.endsWith("0")) setTimeOffSecRText = (setTimeOffSecRText.substring(0,setTimeOffSecRText.indexOf(".") + 1 )) + "5";
 
-        }// else setTimeOffSecRText = setTimeOffSecRText + ".0";
+        } else setTimeOffSecRText = setTimeOffSecRText + ".0";
 
         if (firstWStr.equals("") || secondWStr.equals("") || setDeltaLimit.equals("")){
 
@@ -260,10 +260,12 @@ public class Controller {
                     setTimeOnSecRelay = Math.abs (Long.parseLong(setTimeOnSecRText));
                     //setTimeOnSecR.setText(Long.toString(setTimeOnSecRelay));
                     setTimeOnSecRelay = setTimeOnSecRelay * 100;
+                   // System.out.println(setTimeOnSecRelay );
 
                     setTimeOffSecRelay = Math.abs (Long.parseLong(setTimeOffSecRText));
                     //setTimeOffSecR.setText(Long.toString(setTimeOffSecRelay));
                     setTimeOffSecRelay = setTimeOffSecRelay * 100 + setTimeOnSecRelay;
+                   // System.out.println(setTimeOffSecRelay);
 
                 } else {
                     Alert alert = new Alert(Alert.AlertType.ERROR);
@@ -404,9 +406,15 @@ public class Controller {
         }
     }
 
-    private void playSound(){
-        mainApp.clip.play(1.0);
+    private void playSound(int i){
+        PlaySoundThread playThread = new PlaySoundThread(i);
+
+        Thread thread = new Thread(playThread);
+        thread.setDaemon(true);
+        thread.start();
     }
+
+
 
 
 
@@ -499,10 +507,14 @@ public class Controller {
         private boolean soundIsPlayed = false;
         private long timeOnSecondRelay = 0;
         private long timeOffSecondRelay = 0;
+        long z;
 
 
         @Override
         public void run() {
+            System.out.println("Время полного цикла" + (System.currentTimeMillis() - z));
+            z = System.currentTimeMillis();
+
 
             if (pause && onTarirovka) {
                 try {
@@ -554,7 +566,7 @@ public class Controller {
 
                     try {
                         str = new String(Balances.convertResponse(balances.getResponse()));
-                        System.out.println(str);
+                        //System.out.println(str);
                         iterErrorRead = 0;
 
                     } catch (SerialPortTimeoutException e) {
@@ -666,7 +678,7 @@ public class Controller {
                                 balances.sendRequest(Balances.REQUEST_OFF_RELAY1);
                             }
 
-                            if (soundIsPlayed) playSound();
+                            if (soundIsPlayed) playSound(1);
 
                             soundIsPlayed = false;
                             timeIsSaved = true;
@@ -700,7 +712,7 @@ public class Controller {
                             Thread.sleep(TIME_TREED_SLEEP);
                             balances.sendRequest(Balances.REQUEST_OFF_RELAY2);
 
-                            playSound();
+                            playSound(2);
 
                             pause = false;
                             relayOneOn = false;
@@ -723,6 +735,27 @@ public class Controller {
                     e.printStackTrace();
                 } catch (InterruptedException e) {
                     e.printStackTrace();
+                }
+
+                System.out.println("Время хода программы опроса" + (System.currentTimeMillis() - z));
+            }
+        }
+
+        class PlaySoundThread implements Runnable{
+        private int i;
+
+        public PlaySoundThread(int i){
+            this.i = i;
+        }
+            @Override
+            public void run() {
+                switch (i) {
+                    case 1:
+                        mainApp.clip.play(1.0);
+                        break;
+                    case 2:
+                        mainApp.finichClip.play(1.0);
+                        break;
                 }
             }
         }
