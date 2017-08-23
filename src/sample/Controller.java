@@ -186,7 +186,7 @@ public class Controller {
             timer = new Timer(true);
             myTimerTask = new MyTimerTask();
 
-            timer.schedule(myTimerTask, 250,250);
+            timer.schedule(myTimerTask, 300,300);
         }
     }
 
@@ -309,7 +309,7 @@ public class Controller {
 
     }
 
-    public void endButtonPush() {
+    public synchronized void endButtonPush() {
 
         programIsRun = false;
         progressIndicator.setVisible(false);
@@ -353,7 +353,7 @@ public class Controller {
             torTimer = new Timer(true);
             tarirovkaTimer = new TarirovkaTimer();
 
-            torTimer.schedule(tarirovkaTimer, 8000);
+            torTimer.schedule(tarirovkaTimer, 5000);
 
         }
     }
@@ -507,6 +507,7 @@ public class Controller {
         private boolean soundIsPlayed = false;
         private long timeOnSecondRelay = 0;
         private long timeOffSecondRelay = 0;
+        private int iterStopDelay = 0;
         long z;
 
 
@@ -514,6 +515,29 @@ public class Controller {
         public void run() {
             System.out.println("Время полного цикла" + (System.currentTimeMillis() - z));
             z = System.currentTimeMillis();
+
+
+            // Подсвечивание когда значение находится в заданном пределе
+            if ( weight > (secondW - deltaLimit) && weight <= (secondW + deltaLimit)) {
+                //changeLabelColor(Color.GREEN);
+                //changeLabelColor("#33F449;");
+                changePanelColor("#33F449;");
+                // Остановка программы с задержкой.
+                if (iterStopDelay > 4) {
+                    endButtonPush();
+                }
+                iterStopDelay ++;
+                System.out.println("iterStopDelay = " + iterStopDelay);
+            } else if (weight > (secondW + deltaLimit)) {
+                //changeLabelColor(Color.RED);
+                //changeLabelColor("#ff4949;");
+                changePanelColor("#ff4949;");
+            } else {
+                iterStopDelay = 0;
+                //changeLabelColor(Color.BLACK);
+                //changeLabelColor("transparent;");
+                changePanelColor("transparent;");
+            }
 
 
             if (pause && onTarirovka) {
@@ -538,24 +562,12 @@ public class Controller {
 
 
             if (programIsRun) {
-                // Подсвечивание когда значение находится в заданном пределе
-                if ( weight > (secondW - deltaLimit) && weight <= (secondW + deltaLimit)) {
-                    //changeLabelColor(Color.GREEN);
-                    //changeLabelColor("#33F449;");
-                    changePanelColor("#33F449;");
-                } else if (weight > (secondW + deltaLimit)) {
-                    //changeLabelColor(Color.RED);
-                    //changeLabelColor("#ff4949;");
-                    changePanelColor("#ff4949;");
-                } else {
-                    //changeLabelColor(Color.BLACK);
-                    //changeLabelColor("transparent;");
-                    changePanelColor("transparent;");
-                }
+
             } else  {
                 timeOnSecondRelay = 0;
                 timeIsSaved = false;
-                changePanelColor("transparent;");
+                //changePanelColor("transparent;");
+                iterStopDelay = 0;
             }
 
             if (!pause) {
@@ -669,7 +681,7 @@ public class Controller {
                             timeIsSaved = false;
                             soundIsPlayed = true;
 
-                        } else if (firstW <= weight && weight < secondW) {
+                        } else if (firstW <= weight && weight < (secondW - deltaLimit)) {
                             System.out.println("Включение второго реле" + (System.currentTimeMillis() - timeOnSecondRelay));
 
                             if (!timeIsSaved) {
@@ -703,7 +715,9 @@ public class Controller {
                             }
 
 
-                        } else if (secondW <= weight && (relayOneOn || relayTwoOn)) {
+
+
+                        } else if (weight >= (secondW - deltaLimit)  && (relayOneOn || relayTwoOn)) {
                             System.out.println("Отключение обоих реле");
 
                             pause = true;
@@ -718,6 +732,8 @@ public class Controller {
                             relayOneOn = false;
                             relayTwoOn = false;
                             timeIsSaved = false;
+
+
                         }
 
                     } else if (relayOneOn || relayTwoOn) {
@@ -727,6 +743,8 @@ public class Controller {
                         balances.sendRequest(Balances.REQUEST_OFF_RELAY1);
                         Thread.sleep(TIME_TREED_SLEEP);
                         balances.sendRequest(Balances.REQUEST_OFF_RELAY2);
+                    } else {
+
                     }
 
 

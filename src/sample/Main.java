@@ -35,7 +35,7 @@ public class Main extends Application {
         clip = new AudioClip(resource.toString());
 
         this.primaryStage = primaryStage;
-        primaryStage.setTitle("Libra");
+        primaryStage.setTitle("Libra v0.2");
 
         FXMLLoader loader = new FXMLLoader();
         loader.setLocation(Main.class.getResource("sample.fxml"));
