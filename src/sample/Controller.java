@@ -532,6 +532,7 @@ public class Controller {
                 //changeLabelColor(Color.RED);
                 //changeLabelColor("#ff4949;");
                 changePanelColor("#ff4949;");
+                endButtonPush();
             } else {
                 iterStopDelay = 0;
                 //changeLabelColor(Color.BLACK);
@@ -664,23 +665,25 @@ public class Controller {
                 try {
                     if (programIsRun) {
 
-                        if  (weight < firstW && !relayOneOn) {
+                        //Если вес меньше первого веса
+                        if  (weight < firstW /*&& !relayOneOn*/) {
                             System.out.println("Включение первого реле");
 
                             pause = true;
                             Thread.sleep(TIME_TREED_SLEEP);
                             balances.sendRequest(Balances.REQUEST_ON_RELAY1);
                             Thread.sleep(TIME_TREED_SLEEP);
-                            balances.sendRequest(Balances.REQUEST_OFF_RELAY2);
+                            balances.sendRequest(Balances.REQUEST_ON_RELAY2);
 
 
 
                             pause = false;
                             relayOneOn = true;
-                            relayTwoOn = false;
+                            relayTwoOn = true;
                             timeIsSaved = false;
                             soundIsPlayed = true;
 
+                         // Вес в промежутке между первым и вторым
                         } else if (firstW <= weight && weight < (secondW - deltaLimit)) {
                             System.out.println("Включение второго реле" + (System.currentTimeMillis() - timeOnSecondRelay));
 
@@ -716,7 +719,7 @@ public class Controller {
 
 
 
-
+                        //Вес больше второго - интервал достоверности
                         } else if (weight >= (secondW - deltaLimit)  && (relayOneOn || relayTwoOn)) {
                             System.out.println("Отключение обоих реле");
 
@@ -743,8 +746,6 @@ public class Controller {
                         balances.sendRequest(Balances.REQUEST_OFF_RELAY1);
                         Thread.sleep(TIME_TREED_SLEEP);
                         balances.sendRequest(Balances.REQUEST_OFF_RELAY2);
-                    } else {
-
                     }
 
 
