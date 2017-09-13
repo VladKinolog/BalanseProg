@@ -35,6 +35,8 @@ public class Controller {
     @FXML
     private Label weightGramLabel;
     @FXML
+    private Label operationInfo;
+    @FXML
     private Button startButton;
     @FXML
     private Button endButton;
@@ -56,6 +58,8 @@ public class Controller {
     private TextField setDeltaLimit;
     @FXML
     private ChoiceBox choiceCom;
+    @FXML
+    private CheckBox autorepeatCheckBox;
     @FXML
     private SplitPane splitPane;
     @FXML
@@ -92,6 +96,9 @@ public class Controller {
     private static int iterErrorRead = 0;
     private static volatile long setTimeOnSecRelay;
     private static volatile long setTimeOffSecRelay;
+    private volatile boolean autorepeat;
+    private volatile boolean endProgram;
+    private volatile boolean firstStart;
 
 
     Image imageRefreshBut;
@@ -137,7 +144,6 @@ public class Controller {
                 if (newValue.intValue() >= 0)
                     try {
                         onChoiceCom(newValue.intValue());
-
 
                     } catch (SerialPortException e) {
                         e.printStackTrace();
@@ -192,6 +198,8 @@ public class Controller {
 
     public void startBalancesWeight () throws SerialPortException {
         int posIndex;
+        firstStart = true;
+
 
         String firstWStr = firstWeight.getText();
         String secondWStr = secondWeight.getText();
@@ -310,23 +318,35 @@ public class Controller {
     }
 
     public synchronized void endButtonPush() {
+        endButtonPush(false);
 
+        operationInfo.setText("Стоп");
+    }
+
+    public synchronized void endButtonPush(boolean autorepeat) {
         programIsRun = false;
-        progressIndicator.setVisible(false);
+        endProgram = autorepeat;
 
-        System.out.println("Остановка работы программы");
+        if (!autorepeat) {
+            progressIndicator.setVisible(false);
+            System.out.println("Остановка загрузки");
+
+        } else {
+
+            System.out.println("Остановка загрузки и запуск повторной загрузки");
+        }
+
 
         try {
 
-        Thread.sleep(TIME_TREED_SLEEP);
-        balances.sendRequest(Balances.REQUEST_OFF_RELAY1);
-        Thread.sleep(TIME_TREED_SLEEP);
-        balances.sendRequest(Balances.REQUEST_OFF_RELAY2);
+            Thread.sleep(TIME_TREED_SLEEP);
+            balances.sendRequest(Balances.REQUEST_OFF_RELAY1);
+            Thread.sleep(TIME_TREED_SLEEP);
+            balances.sendRequest(Balances.REQUEST_OFF_RELAY2);
 
         } catch (SerialPortException | InterruptedException  e) {
             e.printStackTrace();
         }
-
     }
 
     /**
@@ -353,7 +373,7 @@ public class Controller {
             torTimer = new Timer(true);
             tarirovkaTimer = new TarirovkaTimer();
 
-            torTimer.schedule(tarirovkaTimer, 5000);
+            torTimer.schedule(tarirovkaTimer, 4000);
 
         }
     }
@@ -376,12 +396,21 @@ public class Controller {
         createPort(numberCom);
     }
 
+    public void onClickAutorepeatCheckBox (){
+
+        autorepeat = autorepeatCheckBox.isSelected();
+
+        if (endProgram && !autorepeat) {
+            endButtonPush();
+        }
+    }
 
     /**
      * Обработка выбраного ком порта с пересозданием нового класса.
      * @param choiceIndex Выбраный индекс в списке
      * @throws SerialPortException
      */
+
     private void onChoiceCom (int choiceIndex) throws SerialPortException {
         String comIndex = listCom.get(choiceIndex) ;
         System.out.println("Выбран новый ком порт - "+comIndex);
@@ -454,7 +483,7 @@ public class Controller {
         this.secondWeight = secondWeight;
     }
 
-    // утелита для изменения цвета лебла веса в другом потоке
+    // утилита для изменения цвета лебла веса в другом потоке
     private void changeLabelColor(Paint paint) {
 
         Platform.runLater(new Runnable() {
@@ -492,6 +521,10 @@ public class Controller {
         @Override
         public void run(){
             pause = false;
+            if (autorepeat) {
+                programIsRun = true;
+            }
+
         }
     }
 
@@ -508,36 +541,80 @@ public class Controller {
         private long timeOnSecondRelay = 0;
         private long timeOffSecondRelay = 0;
         private int iterStopDelay = 0;
+        private int iterRestartProgram = 0;
         long z;
+
+        private void runLaterText (Label label, String text){
+            Platform.runLater(new Runnable() {
+                @Override
+                public void run() {
+                    label.setText(text);
+                }
+            });
+        }
 
 
         @Override
         public void run() {
-            System.out.println("Время полного цикла" + (System.currentTimeMillis() - z));
+            //System.out.println("Время полного цикла" + (System.currentTimeMillis() - z));
             z = System.currentTimeMillis();
 
 
-            // Подсвечивание когда значение находится в заданном пределе
-            if ( weight > (secondW - deltaLimit) && weight <= (secondW + deltaLimit)) {
-                //changeLabelColor(Color.GREEN);
-                //changeLabelColor("#33F449;");
-                changePanelColor("#33F449;");
-                // Остановка программы с задержкой.
-                if (iterStopDelay > 4) {
-                    endButtonPush();
+            if (firstStart) {
+                // Подсвечивание когда значение находится в заданном пределе
+                if (weight > (secondW - deltaLimit) && weight <= (secondW + deltaLimit)) {
+                    //changeLabelColor(Color.GREEN);
+                    //changeLabelColor("#33F449;");
+                    changePanelColor("#33F449;");
+                    // Остановка программы с задержкой.
+                    if (iterStopDelay > 4) {
+                        endButtonPush(autorepeat);
+
+                        if (autorepeat) {
+                            runLaterText(operationInfo, "Автоповтор");
+                        } else {
+                            runLaterText(operationInfo, "Стоп");
+                        }
+                    }
+                    iterStopDelay++;
+                    System.out.println("iterStopDelay = " + iterStopDelay);
+                } else if (weight > (secondW + deltaLimit)) {
+                    //changeLabelColor(Color.RED);
+                    //changeLabelColor("#ff4949;");
+                    changePanelColor("#ff4949;");
+                    endButtonPush(autorepeat);
+
+                    if (autorepeat) {
+                        runLaterText(operationInfo, "Автоповтор");
+                    } else {
+                        runLaterText(operationInfo, "Стоп");
+                    }
+                } else {
+                    iterStopDelay = 0;
+                    //changeLabelColor(Color.BLACK);
+                    //changeLabelColor("transparent;");
+                    changePanelColor("transparent;");
                 }
-                iterStopDelay ++;
-                System.out.println("iterStopDelay = " + iterStopDelay);
-            } else if (weight > (secondW + deltaLimit)) {
-                //changeLabelColor(Color.RED);
-                //changeLabelColor("#ff4949;");
-                changePanelColor("#ff4949;");
-                endButtonPush();
+            }
+
+            if (endProgram && (weight > (0 - secondW/10) && weight < (0 + secondW/10))  ) {
+                if (iterRestartProgram > 15) {
+                    if (weight < 0.001 && weight > - 0.001) {
+                        endProgram = false;
+                        programIsRun = true;
+                    } else {
+                        try {
+                            onClickTorrirovka();
+                            endProgram = false;
+
+                        } catch (SerialPortException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+                iterRestartProgram++;
             } else {
-                iterStopDelay = 0;
-                //changeLabelColor(Color.BLACK);
-                //changeLabelColor("transparent;");
-                changePanelColor("transparent;");
+                iterRestartProgram = 0;
             }
 
 
@@ -683,14 +760,24 @@ public class Controller {
                             timeIsSaved = false;
                             soundIsPlayed = true;
 
+                            runLaterText(operationInfo,"Быстрая загрузка");
+
                          // Вес в промежутке между первым и вторым
                         } else if (firstW <= weight && weight < (secondW - deltaLimit)) {
                             System.out.println("Включение второго реле" + (System.currentTimeMillis() - timeOnSecondRelay));
 
                             if (!timeIsSaved) {
                                 timeOnSecondRelay = System.currentTimeMillis();
+
                                 Thread.sleep(TIME_TREED_SLEEP);
                                 balances.sendRequest(Balances.REQUEST_OFF_RELAY1);
+                                Thread.sleep(TIME_TREED_SLEEP);
+                                balances.sendRequest(Balances.REQUEST_OFF_RELAY2);
+
+                                relayOneOn = false;
+                                relayTwoOn = false;
+
+                                runLaterText(operationInfo, "Точная загрузка");
                             }
 
                             if (soundIsPlayed) playSound(1);
@@ -756,7 +843,7 @@ public class Controller {
                     e.printStackTrace();
                 }
 
-                System.out.println("Время хода программы опроса" + (System.currentTimeMillis() - z));
+                //System.out.println("Время хода программы опроса" + (System.currentTimeMillis() - z));
             }
         }
 

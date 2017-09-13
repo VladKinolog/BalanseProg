@@ -13,7 +13,7 @@
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
 
-<BorderPane maxHeight="327.0" maxWidth="450.0" minHeight="240.0" minWidth="450.0" prefHeight="290.0" prefWidth="450.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="sample.Controller">
+<BorderPane maxHeight="327.0" maxWidth="450.0" minHeight="240.0" minWidth="450.0" prefHeight="318.0" prefWidth="450.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="sample.Controller">
    <top>
       <MenuBar BorderPane.alignment="CENTER">
         <menus>
@@ -50,14 +50,19 @@
                               <Font size="36.0" />
                            </font>
                         </Label>
-                        <Label alignment="CENTER" layoutX="59.0" layoutY="146.0" prefHeight="19.0" prefWidth="39.0" text="grain">
+                        <Label alignment="CENTER" layoutX="60.0" layoutY="166.0" prefHeight="19.0" prefWidth="39.0" text="grain" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="166.0">
                            <font>
                               <Font size="13.0" />
                            </font>
                         </Label>
-                        <Label fx:id="weightGramLabel" alignment="CENTER_RIGHT" layoutX="7.0" layoutY="250.0" prefHeight="17.0" prefWidth="46.0" text="0" textAlignment="RIGHT" />
-                        <Label layoutX="57.0" layoutY="249.0" prefHeight="17.0" prefWidth="45.0" text="gram" />
+                        <Label fx:id="weightGramLabel" alignment="CENTER_RIGHT" layoutX="7.0" layoutY="274.0" prefHeight="17.0" prefWidth="46.0" text="0" textAlignment="RIGHT" AnchorPane.bottomAnchor="1.0" />
+                        <Label layoutX="57.0" layoutY="273.0" prefHeight="17.0" prefWidth="45.0" text="gram" AnchorPane.bottomAnchor="1.0" />
                         <Button fx:id="refresh" layoutX="7.0" layoutY="6.0" maxHeight="32.0" maxWidth="32.0" minHeight="32.0" minWidth="32.0" mnemonicParsing="false" onAction="#onClickRefresh" prefHeight="32.0" prefWidth="32.0" />
+                        <Label fx:id="operationInfo" alignment="CENTER" layoutX="6.0" layoutY="93.0" prefHeight="26.0" prefWidth="144.0" text="Стоп" AnchorPane.leftAnchor="6.0" AnchorPane.rightAnchor="4.0" AnchorPane.topAnchor="98.0">
+                           <font>
+                              <Font size="14.0" />
+                           </font>
+                        </Label>
                      </children>
                   </AnchorPane>
                 <AnchorPane maxWidth="284.0" minHeight="0.0" minWidth="0.0" prefHeight="213.0" prefWidth="284.0">
@@ -90,6 +95,7 @@
                         <TextField fx:id="setTimeOnSecR" layoutX="23.0" layoutY="9.0" prefHeight="25.0" prefWidth="65.0" promptText="пауза" />
                         <TextField fx:id="setTimeOffSecR" layoutX="107.0" layoutY="9.0" prefHeight="25.0" prefWidth="65.0" promptText="работа" />
                         <TextField fx:id="setDeltaLimit" layoutX="23.0" layoutY="45.0" prefHeight="25.0" prefWidth="65.0" promptText="Точн. пред" />
+                        <CheckBox fx:id="autorepeatCheckBox" layoutX="23.0" layoutY="263.0" mnemonicParsing="false" onAction="#onClickAutorepeatCheckBox" prefHeight="19.0" prefWidth="245.0" text="Автоповтор загрузки" />
                      </children>
                   </AnchorPane>
               </items>

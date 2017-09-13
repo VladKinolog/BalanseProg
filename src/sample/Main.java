@@ -16,6 +16,8 @@ import java.util.prefs.Preferences;
 
 public class Main extends Application {
 
+    private static final String APP_VERSION = "0.5";
+
 
     private Stage primaryStage;
     private BorderPane rootLayout;
@@ -35,7 +37,7 @@ public class Main extends Application {
         clip = new AudioClip(resource.toString());
 
         this.primaryStage = primaryStage;
-        primaryStage.setTitle("Libra v0.2");
+        primaryStage.setTitle("Libra v"+APP_VERSION);
 
         FXMLLoader loader = new FXMLLoader();
         loader.setLocation(Main.class.getResource("sample.fxml"));
@@ -151,6 +153,6 @@ public class Main extends Application {
     public void stop() throws SerialPortException {
         System.out.println("Приложение закрыто");
         setPreferences();
-        controller.stopTask();
+        //controller.stopTask();
     }
 }
