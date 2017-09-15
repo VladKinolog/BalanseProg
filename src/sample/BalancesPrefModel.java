@@ -20,6 +20,11 @@ public class BalancesPrefModel {
 
     public BalancesPrefModel (String nameProduct) {
         this.nameProduct = new SimpleStringProperty(nameProduct);
+        this.firstWeight = new SimpleStringProperty("");
+        this.secondWeight = new SimpleStringProperty("");
+        this.timeOnSecR = new SimpleStringProperty("");
+        this.timeOffSecR = new SimpleStringProperty("");
+        this.deltaLimit = new SimpleStringProperty("");
     }
 
     public String getNameProduct() {

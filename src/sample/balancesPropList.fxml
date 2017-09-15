@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.text.*?>
+<?import javafx.geometry.*?>
 <?import java.lang.*?>
-<?import java.util.*?>
-<?import javafx.scene.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
 
 <AnchorPane prefHeight="241.0" prefWidth="479.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="sample.BalancesPropController">
    <children>
@@ -13,9 +12,9 @@
         <items>
           <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="287.0" prefWidth="129.0">
                <children>
-                  <TableView layoutX="-17.0" layoutY="37.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                  <TableView fx:id="balancesPrefTable" layoutX="-17.0" layoutY="37.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                     <columns>
-                      <TableColumn prefWidth="165.0" resizable="false" text="Название изделия" />
+                      <TableColumn fx:id="balancesPrefTableColumn" prefWidth="165.0" resizable="false" text="Название изделия" />
                     </columns>
                      <columnResizePolicy>
                         <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
@@ -75,6 +74,19 @@
                         <Font size="13.0" />
                      </font>
                   </Label>
+                  <HBox layoutX="112.0" layoutY="200.0" AnchorPane.bottomAnchor="5.0" AnchorPane.rightAnchor="5.0">
+                     <children>
+                        <Button fx:id="okButton" mnemonicParsing="false" onAction="#onOkButtonClick" prefHeight="25.0" prefWidth="60.0" text="ОК">
+                           <HBox.margin>
+                              <Insets right="20.0" />
+                           </HBox.margin></Button>
+                        <Button fx:id="deleteButton" mnemonicParsing="false" onAction="#onDeleteButtonClick" prefHeight="25.0" prefWidth="60.0" text="Удалить">
+                           <HBox.margin>
+                              <Insets right="5.0" />
+                           </HBox.margin></Button>
+                        <Button fx:id="cancelButton" mnemonicParsing="false" onAction="#onCancelButtonClick" prefHeight="25.0" prefWidth="60.0" text="Отмена" />
+                     </children>
+                  </HBox>
                </children>
             </AnchorPane>
         </items>

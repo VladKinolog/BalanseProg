@@ -108,7 +108,7 @@
                         <Insets right="5.0" />
                      </HBox.margin>
                   </Button>
-                  <Button fx:id="saveButton" layoutX="231.0" layoutY="1.0" mnemonicParsing="false" onAction="#onClickSavebutton" prefHeight="25.0" prefWidth="52.0" text="Save...">
+                  <Button fx:id="saveButton" layoutX="231.0" layoutY="1.0" mnemonicParsing="false" onAction="#onClickSaveButton" prefHeight="25.0" prefWidth="52.0" text="Save...">
                      <HBox.margin>
                         <Insets />
                      </HBox.margin>

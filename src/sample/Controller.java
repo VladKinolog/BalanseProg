@@ -372,13 +372,12 @@ public class Controller {
     }
 
     public void onClickLoadButton () {
-
         mainApp.startBalancesProp();
-
     }
 
-    public void onClickSavebutton(){
 
+    public void onClickSaveButton(){
+        mainApp.startDialogNewPref();
     }
 
 
@@ -453,6 +452,28 @@ public class Controller {
         this.secondWeight = secondWeight;
     }
 
+    public BalancesPrefModel getPrefModel(String namePref){
+        BalancesPrefModel prefModel = new BalancesPrefModel(namePref);
+
+        prefModel.setFirstWeight(firstWeight.getText());
+        prefModel.setSecondWeight(secondWeight.getText());
+        prefModel.setTimeOnSecR(setTimeOnSecR.getText());
+        prefModel.setTimeOffSecR(setTimeOffSecR.getText());
+        prefModel.setDeltaLimit(setDeltaLimit.getText());
+
+        return prefModel;
+    }
+
+    public void setPrefModel (BalancesPrefModel prefModel){
+
+        firstWeight.setText(prefModel.getFirstWeight());
+        secondWeight.setText(prefModel.getSecondWeight());
+        setTimeOnSecR.setText(prefModel.getTimeOnSecR());
+        setTimeOffSecR.setText(prefModel.getTimeOffSecR());
+        setDeltaLimit.setText(prefModel.getDeltaLimit());
+
+    }
+
     // утелита для изменения цвета лебла веса в другом потоке
     private void changeLabelColor(Paint paint) {
 
@@ -464,6 +485,7 @@ public class Controller {
             }
         });
     }
+
 
 
     class TarirovkaTimer extends TimerTask{

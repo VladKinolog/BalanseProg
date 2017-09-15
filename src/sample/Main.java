@@ -24,16 +24,7 @@ public class Main extends Application {
     private Controller controller;
     private ObservableList<BalancesPrefModel> balancesPrefList = FXCollections.observableArrayList();
 
-    /*
-        Получение ссылки на список настроеек веса и др.
-     */
-    public ObservableList<BalancesPrefModel> getBalancesPrefList() {
-        return balancesPrefList;
-    }
 
-    public Stage getPrimaryStage() {
-        return primaryStage;
-    }
 
     AudioClip clip;
 
@@ -59,7 +50,6 @@ public class Main extends Application {
         System.out.println("Построение макета");
         final URL resource = getClass().getResource("/resources/sound.wav");
 
-
         clip = new AudioClip(resource.toString());
 
         this.primaryStage = primaryStage;
@@ -74,7 +64,6 @@ public class Main extends Application {
 
         primaryStage.setResizable(false);
         primaryStage.show();
-
 
 
         controller = loader.getController();
@@ -102,9 +91,39 @@ public class Main extends Application {
 
             BalancesPropController controller = loader.getController();
             controller.setDialogStage(dialogStage);
+            controller.setMain(this);
             controller.setBalancesPrefList(balancesPrefList);
 
+
             dialogStage.show();
+        } catch (IOException e){
+            e.printStackTrace();
+        }
+    }
+
+    public void startDialogNewPref(){
+        try {
+            FXMLLoader loader = new FXMLLoader();
+            loader.setLocation(Main.class.getResource("savePref.fxml"));
+
+            AnchorPane page = (AnchorPane) loader.load();
+
+            Stage dialogStage = new Stage();
+            dialogStage.initOwner(primaryStage);
+
+            Scene scene = new Scene(page);
+            dialogStage.setScene(scene);
+            dialogStage.setResizable(false);
+
+            SavePrefController controller = loader.getController();
+            controller.setMain(this);
+            controller.setDialogStage(dialogStage);
+            controller.setBalancesPrefList(balancesPrefList);
+
+
+
+            dialogStage.show();
+
         } catch (IOException e){
             e.printStackTrace();
         }
@@ -193,6 +212,32 @@ public class Main extends Application {
         }
 
     }
+
+    /*
+        Получение ссылки на список настроеек веса и др.
+     */
+    public ObservableList<BalancesPrefModel> getBalancesPrefList() {
+        return balancesPrefList;
+    }
+
+    public void setBalancesPrefList(ObservableList<BalancesPrefModel> balancesPrefList) {
+        this.balancesPrefList = balancesPrefList;
+    }
+
+    public Stage getPrimaryStage() {
+        return primaryStage;
+    }
+
+
+    public BalancesPrefModel getPrefModel(String namePref) {
+        return controller.getPrefModel(namePref);
+
+    }
+
+    public void setPrefModel (BalancesPrefModel prefModel){
+        controller.setPrefModel(prefModel);
+    }
+
 
 
     public static void main(String[] args) {

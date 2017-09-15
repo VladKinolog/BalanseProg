@@ -2,9 +2,7 @@ package sample;
 
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
-import javafx.scene.control.Label;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
+import javafx.scene.control.*;
 import javafx.stage.Stage;
 
 
@@ -28,6 +26,12 @@ public class BalancesPropController {
     private Label setTimeOffSecR;
     @FXML
     private Label setDeltaLimit;
+    @FXML
+    private Button okButton;
+    @FXML
+    private Button deleteButton;
+    @FXML
+    private Button cancelButton;
 
     private Main main;
 
@@ -45,7 +49,11 @@ public class BalancesPropController {
     @FXML
     private void initialize() {
         // Инициализация таблицы адресатов с двумя столбцами.
-        //balancesPrefTableColumn.setCellValueFactory(cellData -> cellData.getValue().nameProductProperty());
+        balancesPrefTableColumn.setCellValueFactory(cellData -> cellData.getValue().nameProductProperty());
+
+        showSavedPrefDetail(null);
+
+        balancesPrefTable.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> showSavedPrefDetail(newValue));
     }
 
     /*
@@ -63,5 +71,58 @@ public class BalancesPropController {
 
     public void setBalancesPrefList(ObservableList<BalancesPrefModel> balancesPrefList) {
         this.balancesPrefList = balancesPrefList;
+    }
+
+    @FXML
+    private void onOkButtonClick(){
+        int selectIndex = balancesPrefTable.getSelectionModel().getSelectedIndex();
+        if (selectIndex < 0){
+            dialogStage.close();
+        } else {
+            main.setPrefModel(balancesPrefTable.getItems().get(selectIndex));
+            dialogStage.close();
+        }
+    }
+
+    @FXML
+    private void onDeleteButtonClick(){
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle("Удалить запись");
+        alert.setHeaderText("Удалить сохраненную запись?");
+
+        alert.showAndWait().ifPresent(response -> {
+            if (response == ButtonType.OK) {
+                int selectIndex = balancesPrefTable.getSelectionModel().getSelectedIndex();
+                if (selectIndex >= 0) {
+                    balancesPrefTable.getItems().remove(selectIndex);
+                    main.setBalancesPrefList(balancesPrefTable.getItems());
+                }
+            }
+        });
+
+
+    }
+
+    @FXML
+    private void onCancelButtonClick(){
+        dialogStage.close();
+    }
+
+    private void showSavedPrefDetail (BalancesPrefModel balancesPref) {
+
+        if (balancesPref != null){
+            firstWeight.setText(balancesPref.getFirstWeight());
+            secondWeight.setText(balancesPref.getSecondWeight());
+            setTimeOnSecR.setText(balancesPref.getTimeOnSecR());
+            setTimeOffSecR.setText(balancesPref.getTimeOffSecR());
+            setDeltaLimit.setText(balancesPref.getDeltaLimit());
+
+        }else {
+            firstWeight.setText("");
+            secondWeight.setText("");
+            setTimeOnSecR.setText("");
+            setTimeOffSecR.setText("");
+            setDeltaLimit.setText("");
+        }
     }
 }
