@@ -1,9 +1,13 @@
 package sample;
 
 import javafx.collections.ObservableList;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.stage.Stage;
+import javafx.stage.WindowEvent;
+
+import java.io.File;
 
 
 /**
@@ -54,6 +58,8 @@ public class BalancesPropController {
         showSavedPrefDetail(null);
 
         balancesPrefTable.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> showSavedPrefDetail(newValue));
+
+
     }
 
     /*
@@ -61,6 +67,23 @@ public class BalancesPropController {
       */
     public void setMain (Main main){
         this.main = main;
+        readPrefFromFile();
+
+
+
+        dialogStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
+            public void handle(WindowEvent we) {
+                System.out.println("Закрытие окна и сохранение данных в файл");
+                savePrefToFile();
+            }
+        });
+
+//        dialogStage.setOnShown(new EventHandler<WindowEvent>() {
+//            public void handle(WindowEvent we) {
+//                System.out.println("Открытие окна и сохранение данных в файл");
+//                readPrefFromFile();
+//            }
+//        });
 
         balancesPrefTable.setItems(main.getBalancesPrefList());
     }
@@ -75,12 +98,13 @@ public class BalancesPropController {
 
     @FXML
     private void onOkButtonClick(){
+
         int selectIndex = balancesPrefTable.getSelectionModel().getSelectedIndex();
         if (selectIndex < 0){
             dialogStage.close();
         } else {
             main.setPrefModel(balancesPrefTable.getItems().get(selectIndex));
-            dialogStage.close();
+            dialogStageClose();
         }
     }
 
@@ -105,7 +129,7 @@ public class BalancesPropController {
 
     @FXML
     private void onCancelButtonClick(){
-        dialogStage.close();
+        dialogStageClose();
     }
 
     private void showSavedPrefDetail (BalancesPrefModel balancesPref) {
@@ -124,5 +148,24 @@ public class BalancesPropController {
             setTimeOffSecR.setText("");
             setDeltaLimit.setText("");
         }
+    }
+
+    private void savePrefToFile(){
+        File file = new File("pref.csv");
+        System.out.println(file.getAbsoluteFile());
+        PrefToFile prefToFile = new PrefToFile(file,balancesPrefList);
+        prefToFile.saveListToFile();
+    }
+
+    private void readPrefFromFile(){
+        File file = new File("pref.csv");
+        PrefToFile prefToFile = new PrefToFile(file);
+        balancesPrefList = prefToFile.readListFromFile();
+        main.setBalancesPrefList(balancesPrefList);
+    }
+
+    private void dialogStageClose(){
+        savePrefToFile();
+        dialogStage.close();
     }
 }

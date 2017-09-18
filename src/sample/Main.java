@@ -1,5 +1,6 @@
 package sample;
 
+import com.sun.jmx.remote.internal.Unmarshal;
 import javafx.application.Application;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -12,6 +13,11 @@ import javafx.scene.media.AudioClip;
 import javafx.stage.Stage;
 import jssc.SerialPortException;
 
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
+import javax.xml.bind.Unmarshaller;
+import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.prefs.Preferences;
@@ -116,8 +122,8 @@ public class Main extends Application {
             dialogStage.setResizable(false);
 
             SavePrefController controller = loader.getController();
-            controller.setMain(this);
             controller.setDialogStage(dialogStage);
+            controller.setMain(this);
             controller.setBalancesPrefList(balancesPrefList);
 
 
@@ -236,6 +242,38 @@ public class Main extends Application {
 
     public void setPrefModel (BalancesPrefModel prefModel){
         controller.setPrefModel(prefModel);
+    }
+
+    public void loadPrefFromFile(File file){
+        try {
+            JAXBContext context = JAXBContext.newInstance(PrefListWrapper.class);
+            Unmarshaller unmarshaller = context.createUnmarshaller();
+
+            PrefListWrapper wrapper = (PrefListWrapper) unmarshaller.unmarshal(file);
+
+            balancesPrefList.clear();
+            balancesPrefList.addAll(wrapper.getPreferen());
+
+
+        } catch (JAXBException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void savePrefToFile(File file){
+        try {
+            JAXBContext context = JAXBContext.newInstance(PrefListWrapper.class);
+            Marshaller marshaller = context.createMarshaller();
+            marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
+
+            PrefListWrapper wrapper = new PrefListWrapper();
+            wrapper.setPreferen(balancesPrefList);
+
+            marshaller.marshal(wrapper,file);
+
+        } catch (JAXBException e) {
+            e.printStackTrace();
+        }
     }
 
 
