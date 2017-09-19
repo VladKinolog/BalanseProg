@@ -47,6 +47,10 @@ public class Controller {
     @FXML
     private Button offBalanse;
     @FXML
+    private Button loadButton;
+    @FXML
+    private Button saveButton;
+    @FXML
     private TextField firstWeight;
     @FXML
     private TextField secondWeight;
@@ -144,6 +148,7 @@ public class Controller {
                 if (newValue.intValue() >= 0)
                     try {
                         onChoiceCom(newValue.intValue());
+
 
                     } catch (SerialPortException e) {
                         e.printStackTrace();
@@ -404,6 +409,15 @@ public class Controller {
             endButtonPush();
         }
     }
+    public void onClickLoadButton () {
+        mainApp.startBalancesProp();
+    }
+
+
+    public void onClickSaveButton(){
+        mainApp.startDialogNewPref();
+    }
+
 
     /**
      * Обработка выбраного ком порта с пересозданием нового класса.
@@ -445,8 +459,6 @@ public class Controller {
 
 
 
-
-
     public TextField getFirstWeight() {
         return firstWeight;
     }
@@ -483,7 +495,29 @@ public class Controller {
         this.secondWeight = secondWeight;
     }
 
-    // утилита для изменения цвета лебла веса в другом потоке
+    public BalancesPrefModel getPrefModel(String namePref){
+        BalancesPrefModel prefModel = new BalancesPrefModel(namePref);
+
+        prefModel.setFirstWeight(firstWeight.getText());
+        prefModel.setSecondWeight(secondWeight.getText());
+        prefModel.setTimeOnSecR(setTimeOnSecR.getText());
+        prefModel.setTimeOffSecR(setTimeOffSecR.getText());
+        prefModel.setDeltaLimit(setDeltaLimit.getText());
+
+        return prefModel;
+    }
+
+    public void setPrefModel (BalancesPrefModel prefModel){
+
+        firstWeight.setText(prefModel.getFirstWeight());
+        secondWeight.setText(prefModel.getSecondWeight());
+        setTimeOnSecR.setText(prefModel.getTimeOnSecR());
+        setTimeOffSecR.setText(prefModel.getTimeOffSecR());
+        setDeltaLimit.setText(prefModel.getDeltaLimit());
+
+    }
+
+    // утелита для изменения цвета лебла веса в другом потоке
     private void changeLabelColor(Paint paint) {
 
         Platform.runLater(new Runnable() {
@@ -822,8 +856,6 @@ public class Controller {
                             relayOneOn = false;
                             relayTwoOn = false;
                             timeIsSaved = false;
-
-
                         }
 
                     } else if (relayOneOn || relayTwoOn) {
