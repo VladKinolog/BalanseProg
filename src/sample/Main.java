@@ -244,39 +244,6 @@ public class Main extends Application {
         controller.setPrefModel(prefModel);
     }
 
-    public void loadPrefFromFile(File file){
-        try {
-            JAXBContext context = JAXBContext.newInstance(PrefListWrapper.class);
-            Unmarshaller unmarshaller = context.createUnmarshaller();
-
-            PrefListWrapper wrapper = (PrefListWrapper) unmarshaller.unmarshal(file);
-
-            balancesPrefList.clear();
-            balancesPrefList.addAll(wrapper.getPreferen());
-
-
-        } catch (JAXBException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void savePrefToFile(File file){
-        try {
-            JAXBContext context = JAXBContext.newInstance(PrefListWrapper.class);
-            Marshaller marshaller = context.createMarshaller();
-            marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
-
-            PrefListWrapper wrapper = new PrefListWrapper();
-            wrapper.setPreferen(balancesPrefList);
-
-            marshaller.marshal(wrapper,file);
-
-        } catch (JAXBException e) {
-            e.printStackTrace();
-        }
-    }
-
-
 
     public static void main(String[] args) {
         launch(args);
