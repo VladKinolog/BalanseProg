@@ -81,6 +81,7 @@ public class Main extends Application {
         controller.setMainApp(this);
 
         getPreferences();
+        readPrefFromFile();
 
 
     }
@@ -145,6 +146,12 @@ public class Main extends Application {
         super.init();
 
         System.out.println("Инициализация основного класса");
+    }
+
+    public void readPrefFromFile(){
+        File file = new File("pref.csv");
+        PrefToFile prefToFile = new PrefToFile(file);
+        balancesPrefList = prefToFile.readListFromFile();
     }
 
     /**

@@ -67,7 +67,7 @@ public class BalancesPropController {
       */
     public void setMain (Main main){
         this.main = main;
-        readPrefFromFile();
+        //readPrefFromFile();
 
 
 
@@ -101,7 +101,7 @@ public class BalancesPropController {
 
         int selectIndex = balancesPrefTable.getSelectionModel().getSelectedIndex();
         if (selectIndex < 0){
-            dialogStage.close();
+
         } else {
             main.setPrefModel(balancesPrefTable.getItems().get(selectIndex));
             dialogStageClose();
@@ -157,7 +157,7 @@ public class BalancesPropController {
         prefToFile.saveListToFile();
     }
 
-    private void readPrefFromFile(){
+    public void readPrefFromFile(){
         File file = new File("pref.csv");
         PrefToFile prefToFile = new PrefToFile(file);
         balancesPrefList = prefToFile.readListFromFile();
